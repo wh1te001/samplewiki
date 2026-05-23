@@ -20,7 +20,6 @@ public class SamplesController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>Получить все сэмплы</summary>
     [HttpGet]
     public async Task<IActionResult> GetAllSamples()
     {
@@ -33,10 +32,6 @@ public class SamplesController : ControllerBase
                     Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
-                    Platform = s.Platform.ToString(),
-                    PlatformId = s.PlatformId,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
                     TrackId = s.TrackId,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
@@ -52,7 +47,6 @@ public class SamplesController : ControllerBase
         }
     }
 
-    /// <summary>Получить сэмпл по ID</summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSampleById(int id)
     {
@@ -60,7 +54,6 @@ public class SamplesController : ControllerBase
         {
             var sample = await _dbContext.Samples
                 .Include(s => s.Track)
-                .Include(s => s.Artworks)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (sample == null)
@@ -72,10 +65,6 @@ public class SamplesController : ControllerBase
                 Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
-                Platform = sample.Platform.ToString(),
-                PlatformId = sample.PlatformId,
-                StartTime = sample.StartTime,
-                EndTime = sample.EndTime,
                 TrackId = sample.TrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt,
@@ -86,23 +75,13 @@ public class SamplesController : ControllerBase
                     DurationSeconds = sample.Track.DurationSeconds,
                     TrackNumber = sample.Track.TrackNumber,
                     Genre = sample.Track.Genre,
+                    ResourceUrl = sample.Track.ResourceUrl,
                     AlbumId = sample.Track.AlbumId,
                     ArtistId = sample.Track.ArtistId,
                     UserId = sample.Track.UserId,
                     CreatedAt = sample.Track.CreatedAt,
                     UpdatedAt = sample.Track.UpdatedAt
-                },
-                Artworks = sample.Artworks.Select(a => new ArtworkDto
-                {
-                    Id = a.Id,
-                    Title = a.Title,
-                    ImageUrl = a.ImageUrl,
-                    Description = a.Description,
-                    AlbumId = a.AlbumId,
-                    SampleId = a.SampleId,
-                    CreatedAt = a.CreatedAt,
-                    UpdatedAt = a.UpdatedAt
-                }).ToList()
+                }
             };
 
             return Ok(result);
@@ -114,7 +93,6 @@ public class SamplesController : ControllerBase
         }
     }
 
-    /// <summary>Получить сэмплы по треку</summary>
     [HttpGet("track/{trackId}")]
     public async Task<IActionResult> GetSamplesByTrack(int trackId)
     {
@@ -128,10 +106,6 @@ public class SamplesController : ControllerBase
                     Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
-                    Platform = s.Platform.ToString(),
-                    PlatformId = s.PlatformId,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
                     TrackId = s.TrackId,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
@@ -147,7 +121,6 @@ public class SamplesController : ControllerBase
         }
     }
 
-    /// <summary>Создать новый сэмпл</summary>
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateSample([FromBody] CreateSampleRequest request)
@@ -160,18 +133,11 @@ public class SamplesController : ControllerBase
             if (!Enum.TryParse<SampleType>(request.Type, out var sampleType))
                 return BadRequest("Неверный тип сэмпла");
 
-            if (!Enum.TryParse<PlatformType>(request.Platform, out var platformType))
-                return BadRequest("Неверная платформа");
-
             var sample = new Sample
             {
                 Title = request.Title,
                 Type = sampleType,
                 Description = request.Description,
-                Platform = platformType,
-                PlatformId = request.PlatformId,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
                 TrackId = request.TrackId
             };
 
@@ -184,10 +150,6 @@ public class SamplesController : ControllerBase
                 Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
-                Platform = sample.Platform.ToString(),
-                PlatformId = sample.PlatformId,
-                StartTime = sample.StartTime,
-                EndTime = sample.EndTime,
                 TrackId = sample.TrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt
@@ -204,7 +166,6 @@ public class SamplesController : ControllerBase
         }
     }
 
-    /// <summary>Обновить сэмпл</summary>
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> UpdateSample(int id, [FromBody] UpdateSampleRequest request)
@@ -225,10 +186,6 @@ public class SamplesController : ControllerBase
             }
             if (!string.IsNullOrEmpty(request.Description))
                 sample.Description = request.Description;
-            if (!string.IsNullOrEmpty(request.StartTime))
-                sample.StartTime = request.StartTime;
-            if (!string.IsNullOrEmpty(request.EndTime))
-                sample.EndTime = request.EndTime;
 
             sample.UpdatedAt = DateTime.UtcNow;
 
@@ -240,10 +197,6 @@ public class SamplesController : ControllerBase
                 Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
-                Platform = sample.Platform.ToString(),
-                PlatformId = sample.PlatformId,
-                StartTime = sample.StartTime,
-                EndTime = sample.EndTime,
                 TrackId = sample.TrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt
@@ -260,7 +213,6 @@ public class SamplesController : ControllerBase
         }
     }
 
-    /// <summary>Удалить сэмпл</summary>
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteSample(int id)

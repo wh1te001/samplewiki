@@ -290,35 +290,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ==================== ЛЕНИВАЯ ЗАГРУЗКА IFRAME ====================
+// ==================== ЭКСПОРТ ФУНКЦИЙ ====================
 
-/**
- * Ленивая загрузка iframe элементов при прокрутке
- */
-window.addEventListener('scroll', function() {
-    const iframes = document.querySelectorAll('iframe[data-src]');
-    iframes.forEach(iframe => lazyLoadIframe(iframe));
-});
-
-// Инициальная проверка при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    const iframes = document.querySelectorAll('iframe[data-src]');
-    iframes.forEach(iframe => lazyLoadIframe(iframe));
-});
-
-// ==================== УТИЛИТЫ ====================
-
-/**
- * Экспортирование функций для глобального использования
- * (для onclick обработчиков в HTML)
- */
 window.showPage = showPage;
 window.showArtistDetail = showArtistDetail;
+window.showTrackDetail = showTrackDetail;
+window.showSampleDetail = showSampleDetail;
 window.toggleAuth = toggleAuth;
 window.toggleAuthMode = toggleAuthMode;
 window.performSearch = performSearch;
-window.showSampleEmbed = showSampleEmbed;
-window.closeModal = closeModal;
 window.logout = logout;
 
 console.log('✅ SampleWiki приложение загружено успешно');

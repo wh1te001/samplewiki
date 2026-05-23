@@ -117,10 +117,6 @@ public class TracksController : ControllerBase
                     Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
-                    Platform = s.Platform.ToString(),
-                    PlatformId = s.PlatformId,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
                     TrackId = s.TrackId,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt

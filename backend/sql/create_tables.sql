@@ -44,13 +44,14 @@ CREATE TABLE IF NOT EXISTS `Albums` (
   CONSTRAINT `FK_Albums_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artists` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tracks
+-- Tracks (with ResourceUrl for YouTube/Spotify etc.)
 CREATE TABLE IF NOT EXISTS `Tracks` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `DurationSeconds` INT NOT NULL,
   `TrackNumber` INT NULL,
   `Genre` VARCHAR(50) NULL,
+  `ResourceUrl` VARCHAR(500) NULL COMMENT 'Link to full track on YouTube, Spotify, etc.',
   `AlbumId` INT NOT NULL,
   `ArtistId` INT NOT NULL,
   `UserId` INT NOT NULL,
@@ -63,16 +64,12 @@ CREATE TABLE IF NOT EXISTS `Tracks` (
   CONSTRAINT `FK_Tracks_User` FOREIGN KEY (`UserId`) REFERENCES `Users` (`Id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Samples
+-- Samples (descriptive only — resource links are on Track.ResourceUrl)
 CREATE TABLE IF NOT EXISTS `Samples` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
-  `Type` INT NOT NULL DEFAULT 0,
+  `Type` INT NOT NULL DEFAULT 0 COMMENT '0=Sample, 1=Interpolation, 2=Cover, 3=Remix',
   `Description` TEXT NULL,
-  `Platform` INT NOT NULL DEFAULT 0,
-  `PlatformId` VARCHAR(100) NOT NULL,
-  `StartTime` VARCHAR(20) NOT NULL,
-  `EndTime` VARCHAR(20) NOT NULL,
   `TrackId` INT NOT NULL,
   `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -81,19 +78,18 @@ CREATE TABLE IF NOT EXISTS `Samples` (
   CONSTRAINT `FK_Samples_Track` FOREIGN KEY (`TrackId`) REFERENCES `Tracks` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Artworks
+-- Artworks (album covers only)
 CREATE TABLE IF NOT EXISTS `Artworks` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `ImageUrl` TEXT NOT NULL,
   `Description` TEXT NULL,
-  `AlbumId` INT NULL,
-  `SampleId` INT NULL,
+  `AlbumId` INT NOT NULL,
   `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`Id`),
-  CONSTRAINT `FK_Artworks_Album` FOREIGN KEY (`AlbumId`) REFERENCES `Albums` (`Id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_Artworks_Sample` FOREIGN KEY (`SampleId`) REFERENCES `Samples` (`Id`) ON DELETE CASCADE
+  KEY `IX_Artworks_AlbumId` (`AlbumId`),
+  CONSTRAINT `FK_Artworks_Album` FOREIGN KEY (`AlbumId`) REFERENCES `Albums` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Revisions

@@ -4,7 +4,6 @@ using SampleWiki.DTOs;
 
 namespace SampleWiki.Services;
 
-/// <summary>Сервис для поиска по всей базе данных</summary>
 public class SearchService
 {
     private readonly AppDbContext _dbContext;
@@ -16,7 +15,6 @@ public class SearchService
         _logger = logger;
     }
 
-    /// <summary>Поиск исполнителей по названию</summary>
     public async Task<List<ArtistDto>> SearchArtistsAsync(string query, int limit = 10)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -41,7 +39,6 @@ public class SearchService
         return results;
     }
 
-    /// <summary>Поиск альбомов по названию</summary>
     public async Task<List<AlbumDto>> SearchAlbumsAsync(string query, int limit = 10)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -67,7 +64,6 @@ public class SearchService
         return results;
     }
 
-    /// <summary>Поиск треков по названию или жанру</summary>
     public async Task<List<TrackDto>> SearchTracksAsync(string query, int limit = 10)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -83,6 +79,7 @@ public class SearchService
                 DurationSeconds = t.DurationSeconds,
                 TrackNumber = t.TrackNumber,
                 Genre = t.Genre,
+                ResourceUrl = t.ResourceUrl,
                 AlbumId = t.AlbumId,
                 ArtistId = t.ArtistId,
                 UserId = t.UserId,
@@ -96,7 +93,6 @@ public class SearchService
         return results;
     }
 
-    /// <summary>Поиск сэмплов по названию или описанию</summary>
     public async Task<List<SampleDto>> SearchSamplesAsync(string query, int limit = 10)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -111,10 +107,6 @@ public class SearchService
                 Title = s.Title,
                 Type = s.Type.ToString(),
                 Description = s.Description,
-                Platform = s.Platform.ToString(),
-                PlatformId = s.PlatformId,
-                StartTime = s.StartTime,
-                EndTime = s.EndTime,
                 TrackId = s.TrackId,
                 CreatedAt = s.CreatedAt,
                 UpdatedAt = s.UpdatedAt
@@ -126,7 +118,6 @@ public class SearchService
         return results;
     }
 
-    /// <summary>Глобальный поиск во всех сущностях</summary>
     public async Task<dynamic> GlobalSearchAsync(string query)
     {
         if (string.IsNullOrWhiteSpace(query))

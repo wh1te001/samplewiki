@@ -110,11 +110,11 @@ builder.Services.AddLogging(config =>
 
 var app = builder.Build();
 
-// ==================== МИГРАЦИИ БД (автоматическое создание) ====================
+// ==================== СОЗДАНИЕ БД (если не существует) ====================
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    dbContext.Database.EnsureCreated();
 }
 
 // ==================== MIDDLEWARE КОНВЕЙЕР ====================
