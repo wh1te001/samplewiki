@@ -1,0 +1,672 @@
+/* ==================== ОБЩИЕ СТИЛИ ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f0f0f;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+/* ==================== НАВИГАЦИОННАЯ ПАНЕЛЬ ==================== */
+.navbar {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #ff5500, #ffaa00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.navbar-menu {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+.navbar-menu a {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.navbar-menu a:hover {
+    color: #ff5500;
+}
+
+/* ==================== КОНТЕЙНЕР ==================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.main-content {
+    min-height: calc(100vh - 70px);
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* ==================== СЕКЦИИ ==================== */
+.section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==================== ЗАГОЛОВКИ ==================== */
+h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #ff5500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== СЕТКА ЭЛЕМЕНТОВ ==================== */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    border: 1px solid #444;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(255, 85, 0, 0.3);
+}
+
+.card h3 {
+    color: #ff5500;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.card p {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+    margin-bottom: 0.5rem;
+}
+
+/* ==================== КНОПКИ ==================== */
+.btn-primary, .btn-back, button {
+    background-color: #ff5500;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.btn-primary:hover, button:hover {
+    background-color: #ff6f20;
+    transform: scale(1.05);
+}
+
+.btn-primary:active, button:active {
+    transform: scale(0.98);
+}
+
+.btn-back {
+    margin-bottom: 1rem;
+    background-color: #444;
+}
+
+.btn-back:hover {
+    background-color: #555;
+}
+
+.btn-secondary {
+    background-color: #666;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-secondary:hover {
+    background-color: #777;
+}
+
+.btn-danger {
+    background-color: #d32f2f;
+}
+
+.btn-danger:hover {
+    background-color: #f44336;
+}
+
+/* ==================== ФОРМЫ ==================== */
+input, textarea, select {
+    background-color: #222;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 0.75rem;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #ff5500;
+    box-shadow: 0 0 5px rgba(255, 85, 0, 0.3);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* ==================== АУТЕНТИФИКАЦИЯ ==================== */
+.auth-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px);
+}
+
+.auth-container {
+    max-width: 400px;
+    width: 100%;
+}
+
+.auth-form {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.auth-form h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-form input {
+    margin-bottom: 1rem;
+}
+
+.auth-form button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* ==================== ПОИСК ==================== */
+.search-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.search-container input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.search-container button {
+    padding: 0.75rem 2rem;
+}
+
+#searchResults {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ==================== ИСТОРИЯ ==================== */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.history-item {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border-left: 4px solid #ff5500;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+.history-item-title {
+    color: #ff5500;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.history-item-date {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.history-item-changes {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #444;
+}
+
+/* ==================== МОДАЛЬНОЕ ОКНО ==================== */
+.modal {
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #444;
+}
+
+.modal-content h2 {
+    margin-bottom: 1rem;
+}
+
+.close {
+    color: #e0e0e0;
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: #ff5500;
+}
+
+/* ==================== TOAST УВЕДОМЛЕНИЯ ==================== */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: #e0e0e0;
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+    z-index: 3000;
+    max-width: 300px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid #ff5500;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast.error {
+    border-left-color: #d32f2f;
+    background-color: #5c2c2c;
+}
+
+.toast.success {
+    border-left-color: #4caf50;
+    background-color: #2c5c2c;
+}
+
+/* ==================== ДЕТАЛИ ==================== */
+.detail-header {
+    margin-bottom: 2rem;
+}
+
+.detail-header h2 {
+    margin-bottom: 0.5rem;
+}
+
+.detail-meta {
+    color: #777;
+    font-size: 0.9rem;
+}
+
+.detail-body {
+    margin-bottom: 2rem;
+}
+
+.detail-section {
+    margin-bottom: 2rem;
+}
+
+.detail-section h3 {
+    color: #ff5500;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+/* ==================== ИНФОРМАЦИЯ О ТРЕКЕ ==================== */
+.track-detail-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.track-artwork {
+    position: relative;
+}
+
+.track-artwork img {
+    width: 100%;
+    height: auto;
+}
+
+.track-info-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.track-info {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #ff5500;
+}
+
+.track-info p {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    color: #b0b0b0;
+}
+
+.track-info strong {
+    color: #ff5500;
+}
+
+/* ==================== СРАВНЕНИЕ СЭМПЛОВ (ДВА ПЛЕЕРА) ==================== */
+.samples-comparison-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.sample-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sample-side.left-side {
+    align-items: flex-start;
+}
+
+.sample-side.right-side {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.sample-header {
+    width: 100%;
+}
+
+.sample-header h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.sample-header h3 {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.sample-artwork {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.sample-player {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.sample-player iframe {
+    display: block;
+    border-radius: 8px;
+}
+
+.sample-timecode {
+    font-size: 0.9rem;
+    color: #999;
+    width: 100%;
+}
+
+.sample-info-box {
+    width: 100%;
+    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+/* ==================== КОННЕКТОР МЕЖДУ СЭМПЛАМИ ==================== */
+.sample-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 300px;
+}
+
+.connector-line {
+    flex: 1;
+    width: 2px;
+    background: linear-gradient(180deg, #ff5500, transparent);
+}
+
+.connector-icon {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ff5500;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    background: #1a1a1a;
+    border: 2px solid #ff5500;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ==================== СЭМПЛЫ В ТРЕКЕ ==================== */
+.samples-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sample-card {
+    background: linear-gradient(135deg, #1f1f1f, #2a2a2a);
+    padding: 1.25rem;
+    border-radius: 6px;
+    border-left: 3px solid #ff5500;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.sample-card:hover {
+    background: linear-gradient(135deg, #252525, #303030);
+    box-shadow: 0 5px 15px rgba(255, 85, 0, 0.2);
+    transform: translateX(5px);
+}
+
+.sample-card h4 {
+    color: #ff5500;
+    margin-bottom: 0.5rem;
+}
+
+.sample-card p {
+    margin: 0.25rem 0;
+    font-size: 0.85rem;
+}
+
+/* ==================== ПЛЕЕР И КОНТЕЙНЕР ПЛЕЕРОВ ==================== */
+.players-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.player-section {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.player-section h3 {
+    color: #ff5500;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.player-section iframe {
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 768px) {
+    .navbar-menu {
+        gap: 1rem;
+        flex-direction: column;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-container {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        max-width: 95%;
+        padding: 1.5rem;
+    }
+
+    .players-container {
+        grid-template-columns: 1fr;
+    }
+
+    .track-detail-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .samples-comparison-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .sample-connector {
+        min-height: auto;
+        flex-direction: row;
+        margin: 1rem 0;
+    }
+
+    .connector-line {
+        flex: none;
+        width: auto;
+        height: 2px;
+        background: linear-gradient(90deg, #ff5500, transparent);
+    }
+
+    .sample-side.right-side {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .navbar-brand h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ==================== ПУСТЫЕ СОСТОЯНИЯ ==================== */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #777;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}

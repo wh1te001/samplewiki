@@ -1,0 +1,10 @@
+bin/
+obj/
+*.user
+appsettings.Development.json
+.DS_Store
+frontend/node_modules
+backend/.vs
+*.png
+*.docx
+теоретическая часть диплома.md
