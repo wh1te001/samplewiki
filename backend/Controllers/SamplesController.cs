@@ -32,6 +32,7 @@ public class SamplesController : ControllerBase
                     Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
+                    SourceUrl = s.SourceUrl,
                     TrackId = s.TrackId,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
@@ -65,6 +66,7 @@ public class SamplesController : ControllerBase
                 Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
+                SourceUrl = sample.SourceUrl,
                 TrackId = sample.TrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt,
@@ -106,6 +108,7 @@ public class SamplesController : ControllerBase
                     Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
+                    SourceUrl = s.SourceUrl,
                     TrackId = s.TrackId,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
@@ -138,6 +141,7 @@ public class SamplesController : ControllerBase
                 Title = request.Title,
                 Type = sampleType,
                 Description = request.Description,
+                SourceUrl = request.SourceUrl,
                 TrackId = request.TrackId
             };
 
@@ -150,6 +154,7 @@ public class SamplesController : ControllerBase
                 Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
+                SourceUrl = sample.SourceUrl,
                 TrackId = sample.TrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt
@@ -186,6 +191,8 @@ public class SamplesController : ControllerBase
             }
             if (!string.IsNullOrEmpty(request.Description))
                 sample.Description = request.Description;
+            if (!string.IsNullOrEmpty(request.SourceUrl))
+                sample.SourceUrl = request.SourceUrl;
 
             sample.UpdatedAt = DateTime.UtcNow;
 
@@ -197,6 +204,7 @@ public class SamplesController : ControllerBase
                 Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
+                SourceUrl = sample.SourceUrl,
                 TrackId = sample.TrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt

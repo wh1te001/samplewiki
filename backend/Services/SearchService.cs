@@ -107,6 +107,7 @@ public class SearchService
                 Title = s.Title,
                 Type = s.Type.ToString(),
                 Description = s.Description,
+                SourceUrl = s.SourceUrl,
                 TrackId = s.TrackId,
                 CreatedAt = s.CreatedAt,
                 UpdatedAt = s.UpdatedAt

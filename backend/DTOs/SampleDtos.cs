@@ -5,6 +5,7 @@ public class CreateSampleRequest
     public required string Title { get; set; }
     public required string Type { get; set; }
     public string? Description { get; set; }
+    public string? SourceUrl { get; set; }
     public int TrackId { get; set; }
 }
 
@@ -13,6 +14,7 @@ public class UpdateSampleRequest
     public string? Title { get; set; }
     public string? Type { get; set; }
     public string? Description { get; set; }
+    public string? SourceUrl { get; set; }
 }
 
 public class SampleDto
@@ -21,6 +23,7 @@ public class SampleDto
     public required string Title { get; set; }
     public required string Type { get; set; }
     public string? Description { get; set; }
+    public string? SourceUrl { get; set; }
     public int TrackId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

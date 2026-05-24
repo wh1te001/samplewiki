@@ -77,6 +77,7 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(s => s.Id);
             entity.Property(s => s.Title).IsRequired().HasMaxLength(200);
+            entity.Property(s => s.SourceUrl).HasMaxLength(500);
 
             entity.HasOne(s => s.Track)
                 .WithMany(t => t.Samples)

@@ -1,9 +1,8 @@
--- Create database and use it
-CREATE DATABASE IF NOT EXISTS `samplewiki` CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
+DROP DATABASE IF EXISTS `samplewiki`;
+CREATE DATABASE `samplewiki` CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci;
 USE `samplewiki`;
 
--- Users
-CREATE TABLE IF NOT EXISTS `Users` (
+CREATE TABLE `Users` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Username` VARCHAR(100) NOT NULL,
   `Email` VARCHAR(100) NOT NULL,
@@ -18,8 +17,7 @@ CREATE TABLE IF NOT EXISTS `Users` (
   UNIQUE KEY `UX_Users_Email` (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Artists
-CREATE TABLE IF NOT EXISTS `Artists` (
+CREATE TABLE `Artists` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Name` VARCHAR(200) NOT NULL,
   `Description` TEXT NULL,
@@ -30,8 +28,7 @@ CREATE TABLE IF NOT EXISTS `Artists` (
   KEY `IX_Artists_Name` (`Name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Albums
-CREATE TABLE IF NOT EXISTS `Albums` (
+CREATE TABLE `Albums` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `ReleaseYear` INT NULL,
@@ -44,14 +41,13 @@ CREATE TABLE IF NOT EXISTS `Albums` (
   CONSTRAINT `FK_Albums_Artist` FOREIGN KEY (`ArtistId`) REFERENCES `Artists` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tracks (with ResourceUrl for YouTube/Spotify etc.)
-CREATE TABLE IF NOT EXISTS `Tracks` (
+CREATE TABLE `Tracks` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `DurationSeconds` INT NOT NULL,
   `TrackNumber` INT NULL,
   `Genre` VARCHAR(50) NULL,
-  `ResourceUrl` VARCHAR(500) NULL COMMENT 'Link to full track on YouTube, Spotify, etc.',
+  `ResourceUrl` VARCHAR(500) NULL,
   `AlbumId` INT NOT NULL,
   `ArtistId` INT NOT NULL,
   `UserId` INT NOT NULL,
@@ -64,12 +60,12 @@ CREATE TABLE IF NOT EXISTS `Tracks` (
   CONSTRAINT `FK_Tracks_User` FOREIGN KEY (`UserId`) REFERENCES `Users` (`Id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Samples (descriptive only — resource links are on Track.ResourceUrl)
-CREATE TABLE IF NOT EXISTS `Samples` (
+CREATE TABLE `Samples` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `Type` INT NOT NULL DEFAULT 0 COMMENT '0=Sample, 1=Interpolation, 2=Cover, 3=Remix',
   `Description` TEXT NULL,
+  `SourceUrl` VARCHAR(500) NULL COMMENT 'URL of the original song being sampled',
   `TrackId` INT NOT NULL,
   `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -78,8 +74,7 @@ CREATE TABLE IF NOT EXISTS `Samples` (
   CONSTRAINT `FK_Samples_Track` FOREIGN KEY (`TrackId`) REFERENCES `Tracks` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Artworks (album covers only)
-CREATE TABLE IF NOT EXISTS `Artworks` (
+CREATE TABLE `Artworks` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `ImageUrl` TEXT NOT NULL,
@@ -92,8 +87,7 @@ CREATE TABLE IF NOT EXISTS `Artworks` (
   CONSTRAINT `FK_Artworks_Album` FOREIGN KEY (`AlbumId`) REFERENCES `Albums` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Revisions
-CREATE TABLE IF NOT EXISTS `Revisions` (
+CREATE TABLE `Revisions` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `ChangeType` INT NOT NULL,
   `EntityName` VARCHAR(100) NOT NULL,
@@ -112,9 +106,4 @@ CREATE TABLE IF NOT EXISTS `Revisions` (
   CONSTRAINT `FK_Revisions_Track` FOREIGN KEY (`TrackId`) REFERENCES `Tracks` (`Id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- EF Migrations history (optional)
-CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
-  `MigrationId` VARCHAR(150) NOT NULL,
-  `ProductVersion` VARCHAR(32) NOT NULL,
-  PRIMARY KEY (`MigrationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+SELECT 'Database created successfully' AS Message;
