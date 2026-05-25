@@ -56,25 +56,25 @@ VALUES ('Runaway', 543, 9, 'Hip-Hop', 'https://www.youtube.com/watch?v=Bm5iA4Zup
 SET @kanyeTrackRunaway = LAST_INSERT_ID();
 
 -- Samples (with SourceUrl pointing to the original song)
-INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
+INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `StartTimeSeconds`, `TrackId`) VALUES
 ('Harder, Better, Faster, Stronger (vocal chop)', 0,
  'Kanye West''s "Stronger" prominently samples the vocal hook from Daft Punk''s "Harder, Better, Faster, Stronger".',
- 'https://www.youtube.com/watch?v=gAjR4_CbPpQ', @kanyeTrackStronger);
+ 'https://www.youtube.com/watch?v=gAjR4_CbPpQ', 15, @kanyeTrackStronger);
 
- INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
+ INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `StartTimeSeconds`, `TrackId`) VALUES
  ('King Crimson "21st Century Schizoid Man"', 0,
   'Kanye West''s "Power" samples the iconic guitar riff from King Crimson''s "21st Century Schizoid Man" (1969).',
-  'https://www.youtube.com/watch?v=7OvW8Z7kiws', @kanyeTrackPower);
+  'https://www.youtube.com/watch?v=7OvW8Z7kiws', 0, @kanyeTrackPower);
 
-INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
+INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `StartTimeSeconds`, `TrackId`) VALUES
 ('Volcano Choir "Still" (vocal loop)', 1,
  '"Runaway" uses an interpolation of the vocal melody from Volcano Choir''s "Still".',
- NULL, @kanyeTrackRunaway);
+ NULL, NULL, @kanyeTrackRunaway);
 
- INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
+ INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `StartTimeSeconds`, `TrackId`) VALUES
  ('George Duke "I Love You More"', 0,
   'Daft Punk''s "Digital Love" samples the piano riff from George Duke''s "I Love You More" (1982).',
-  'https://www.youtube.com/watch?v=IEibygqqLZc', @daftTrackDigitalLove);
+  'https://www.youtube.com/watch?v=IEibygqqLZc', 5, @daftTrackDigitalLove);
 
 -- Artworks (album covers)
 INSERT INTO `Artworks` (`Title`, `ImageUrl`, `Description`, `AlbumId`) VALUES

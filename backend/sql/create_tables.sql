@@ -66,6 +66,7 @@ CREATE TABLE `Samples` (
   `Type` INT NOT NULL DEFAULT 0 COMMENT '0=Sample, 1=Interpolation, 2=Cover, 3=Remix',
   `Description` TEXT NULL,
   `SourceUrl` VARCHAR(500) NULL COMMENT 'URL of the original song being sampled',
+  `StartTimeSeconds` INT NULL COMMENT 'Timecode where the sample starts (in seconds)',
   `TrackId` INT NOT NULL,
   `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

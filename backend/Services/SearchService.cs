@@ -101,17 +101,18 @@ public class SearchService
         var results = await _dbContext.Samples
             .Where(s => s.Title.Contains(query) || (s.Description != null && s.Description.Contains(query)))
             .Take(limit)
-            .Select(s => new SampleDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Type = s.Type.ToString(),
-                Description = s.Description,
-                SourceUrl = s.SourceUrl,
-                TrackId = s.TrackId,
-                CreatedAt = s.CreatedAt,
-                UpdatedAt = s.UpdatedAt
-            })
+                .Select(s => new SampleDto
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    Type = s.Type.ToString(),
+                    Description = s.Description,
+                    SourceUrl = s.SourceUrl,
+                    StartTimeSeconds = s.StartTimeSeconds,
+                    TrackId = s.TrackId,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt
+                })
             .ToListAsync();
 
         _logger.LogInformation("🔍 Поиск сэмплов: '{Query}' - найдено {Count}", query, results.Count);

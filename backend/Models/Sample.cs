@@ -10,6 +10,9 @@ public class Sample : BaseEntity
 
     public string? SourceUrl { get; set; }
 
+    /// <summary>Время начала сэмпла в треке (в секундах)</summary>
+    public int? StartTimeSeconds { get; set; }
+
     public int TrackId { get; set; }
 
     public Track Track { get; set; } = null!;

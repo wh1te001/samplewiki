@@ -118,6 +118,7 @@ public class TracksController : ControllerBase
                     Type = s.Type.ToString(),
                     Description = s.Description,
                     SourceUrl = s.SourceUrl,
+                    StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt

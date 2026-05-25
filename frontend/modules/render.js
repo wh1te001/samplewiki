@@ -19,16 +19,34 @@ function embedUrlFromUrl(url) {
     return null;
 }
 
-function embedHtml(url, title, height = 315) {
+function embedHtml(url, title, startSeconds = 0) {
     const info = embedUrlFromUrl(url);
     if (!info) return '';
     if (info.type === 'youtube') {
-        return `<iframe width="100%" height="${height}" src="${info.embed}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="border-radius:10px;"></iframe>`;
+        const src = startSeconds > 0
+            ? info.embed + '&start=' + startSeconds
+            : info.embed;
+        return `<iframe width="100%" height="100%" src="${src}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
     }
     if (info.type === 'bandcamp') {
-        return `<iframe style="border:0;width:100%;height:${Math.min(height, 120)}px;" src="${info.embed}" seamless></iframe>`;
+        return `<iframe style="border:0;width:100%;height:120px;" src="${info.embed}" seamless></iframe>`;
     }
     return '';
+}
+
+function jumpToTime(containerId, url, title, seconds) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = embedHtml(url, title, seconds);
+}
+
+function jumpTrackEmbed(el) {
+    const url = el.getAttribute('data-url');
+    const title = el.getAttribute('data-title');
+    const seconds = parseInt(el.getAttribute('data-seconds'), 10);
+    if (url && !isNaN(seconds)) {
+        jumpToTime('track-embed-container', url, title, seconds);
+    }
 }
 
 async function renderArtists(artists) {
@@ -144,7 +162,7 @@ function getSampleTypeBadge(type) {
 
 function renderTrackDetail(track, samples) {
     const detail = document.getElementById('trackDetail');
-    const embed = embedHtml(track.resourceUrl, track.title, 400);
+    const hasTrackEmbed = !!embedUrlFromUrl(track.resourceUrl);
     const samplesHtml = samples && samples.length > 0
         ? `<div class="samples-section">
             <h3>Сэмплы в этом треке (${samples.length})</h3>
@@ -153,6 +171,9 @@ function renderTrackDetail(track, samples) {
                 ${samples.map(s => `
                     <div class="sample-card" onclick="navigateTo('sample/${s.id}')">
                         <h4>${escapeHtml(s.title)} ${getSampleTypeBadge(s.type)}</h4>
+                        ${s.startTimeSeconds != null
+                            ? `<span class="sample-timecode" data-url="${escapeHtml(track.resourceUrl)}" data-title="${escapeHtml(track.title)}" data-seconds="${s.startTimeSeconds}" onclick="event.stopPropagation(); jumpTrackEmbed(this)">⏱ ${formatTime(s.startTimeSeconds)}</span>`
+                            : ''}
                         ${s.description ? `<p>${truncateText(s.description, 100)}</p>` : ''}
                         <p style="font-size:0.85rem;color:#7c3aed;">Подробнее →</p>
                     </div>`).join('')}
@@ -178,7 +199,7 @@ function renderTrackDetail(track, samples) {
                         ${track.resourceUrl ? `<div style="margin-top:0.75rem;"><a href="${escapeHtml(track.resourceUrl)}" target="_blank" class="listen-btn">🎵 Слушать на YouTube →</a></div>` : ''}
                     </div>
                 </div>
-                ${embed ? `<div class="track-embed">${embed}</div>` : ''}
+                ${hasTrackEmbed ? `<div class="embed-16-9" id="track-embed-container">${embedHtml(track.resourceUrl, track.title)}</div>` : ''}
             </div>
             ${samplesHtml}
         </div>`;
@@ -186,41 +207,35 @@ function renderTrackDetail(track, samples) {
 
 function renderSampleDetail(originalTrack, sample) {
     const detail = document.getElementById('sampleDetail');
-    const trackEmbed = embedHtml(originalTrack.resourceUrl, originalTrack.title, 250);
-    const sourceEmbed = embedHtml(sample.sourceUrl, sample.title, 250);
-    const hasSourceEmbed = !!sourceEmbed;
+    const hasSourceEmbed = sample.sourceUrl && !!embedUrlFromUrl(sample.sourceUrl);
 
     detail.innerHTML = `
         <div class="track-detail-layout">
             <div class="track-info-card">
-                <h2 style="text-align:center;margin-bottom:1rem;">🔊 Сравнение сэмпла</h2>
-                <div class="sample-comparison">
-                    <div class="sample-side">
-                        <h3>В ЭТОМ ТРЕКЕ</h3>
-                        <h4>${escapeHtml(originalTrack.title)}</h4>
-                        <p class="artist-name">${escapeHtml(originalTrack.artist ? originalTrack.artist.name : 'Неизвестен')}</p>
-                        ${originalTrack.album && originalTrack.album.imageUrl
-                            ? `<img src="${escapeHtml(originalTrack.album.imageUrl)}" alt="Album" style="width:100%;max-width:200px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">`
-                            : ''}
-                        <p style="font-size:0.85rem;color:#8888a0;"><strong>Жанр:</strong> ${originalTrack.genre || 'Не указан'}</p>
-                        ${originalTrack.album && originalTrack.album.releaseYear ? `<p style="font-size:0.85rem;color:#8888a0;"><strong>Год:</strong> ${originalTrack.album.releaseYear}</p>` : ''}
-                        ${originalTrack.resourceUrl ? `<div><a href="${escapeHtml(originalTrack.resourceUrl)}" target="_blank" class="listen-btn">🎵 Слушать трек →</a></div>` : ''}
-                        ${trackEmbed ? `<div class="sample-embed">${trackEmbed}</div>` : ''}
+                <h2 style="text-align:center;margin-bottom:1.5rem;">${escapeHtml(originalTrack.title)} заимствует из ${escapeHtml(sample.title)}</h2>
+                <div class="sample-video-grid">
+                    <div class="sample-video-col">
+                        <h3 class="sample-video-label">В ЭТОМ ТРЕКЕ</h3>
+                        <div class="embed-16-9" id="track-embed-container">${embedHtml(originalTrack.resourceUrl, originalTrack.title)}</div>
+                        <div style="margin-top:0.75rem;">
+                            <p style="font-weight:600;">${escapeHtml(originalTrack.title)}</p>
+                            <p style="color:#8888a0;font-size:0.85rem;">${escapeHtml(originalTrack.artist ? originalTrack.artist.name : 'Неизвестен')}</p>
+                            ${sample.startTimeSeconds != null
+                                ? `<span class="sample-timecode-big" data-url="${escapeHtml(originalTrack.resourceUrl)}" data-title="${escapeHtml(originalTrack.title)}" data-seconds="${sample.startTimeSeconds}" onclick="jumpTrackEmbed(this)">⏱ ${formatTime(sample.startTimeSeconds)}</span>`
+                                : ''}
+                            <div style="margin-top:0.5rem;"><a href="${escapeHtml(originalTrack.resourceUrl)}" target="_blank" class="listen-btn">Слушать трек →</a></div>
+                        </div>
                     </div>
-
-                    <div class="sample-connector">
-                        <div class="connector-line"></div>
-                        <div class="connector-icon">samples</div>
-                        <div class="connector-line"></div>
-                    </div>
-
-                    <div class="sample-side">
-                        <h3>ОТКУДА ПОЗАИМСТВОВАНО</h3>
-                        <h4>${escapeHtml(sample.title)}</h4>
-                        <p style="margin-bottom:0.5rem;">${getSampleTypeBadge(sample.type)}</p>
-                        ${sample.description ? `<div class="sample-description">${escapeHtml(sample.description)}</div>` : '<p style="color:#8888a0;">Описание не добавлено</p>'}
-                        ${sample.sourceUrl ? `<div style="margin-top:0.5rem;"><a href="${escapeHtml(sample.sourceUrl)}" target="_blank" class="listen-btn">🎵 Слушать оригинал →</a></div>` : ''}
-                        ${hasSourceEmbed ? `<div class="sample-embed" style="margin-top:1rem;">${sourceEmbed}</div>` : ''}
+                    <div class="sample-video-col">
+                        <h3 class="sample-video-label">ОТКУДА ПОЗАИМСТВОВАНО</h3>
+                        ${sample.sourceUrl
+                            ? `<div class="embed-16-9">${embedHtml(sample.sourceUrl, sample.title)}</div>`
+                            : '<div class="embed-16-9" style="background:#f8f6fc;display:flex;align-items:center;justify-content:center;color:#8888a0;">Видео не добавлено</div>'}
+                        <div style="margin-top:0.75rem;">
+                            <p style="font-weight:600;">${escapeHtml(sample.title)} ${getSampleTypeBadge(sample.type)}</p>
+                            ${sample.description ? `<p style="color:#8888a0;font-size:0.85rem;">${truncateText(sample.description, 120)}</p>` : ''}
+                            ${sample.sourceUrl ? `<div style="margin-top:0.5rem;"><a href="${escapeHtml(sample.sourceUrl)}" target="_blank" class="listen-btn">Слушать оригинал →</a></div>` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
