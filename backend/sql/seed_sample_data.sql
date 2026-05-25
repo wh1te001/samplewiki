@@ -36,7 +36,7 @@ VALUES ('Harder, Better, Faster, Stronger', 224, 4, 'Electronic', 'https://www.y
 SET @daftTrackHBFS = LAST_INSERT_ID();
 
 INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Digital Love', 300, 5, 'Electronic', 'https://www.youtube.com/watch?v=NtlT3hMfHXg', @daftAlbumDiscovery, @daftId, @userId);
+VALUES ('Digital Love', 300, 5, 'Electronic', 'https://www.youtube.com/watch?v=FxzBvqY5PP0', @daftAlbumDiscovery, @daftId, @userId);
 SET @daftTrackDigitalLove = LAST_INSERT_ID();
 
 INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
@@ -48,11 +48,11 @@ VALUES ('Stronger', 311, 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=PsO6ZnUZ
 SET @kanyeTrackStronger = LAST_INSERT_ID();
 
 INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Power', 292, 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=TYo3nzMhgo4', @kanyeAlbumMBDTF, @kanyeId, @userId);
+VALUES ('Power', 292, 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=L53gjP-TtGE', @kanyeAlbumMBDTF, @kanyeId, @userId);
 SET @kanyeTrackPower = LAST_INSERT_ID();
 
 INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Runaway', 543, 9, 'Hip-Hop', 'https://www.youtube.com/watch?v=Bm5H7y6R4YI', @kanyeAlbumMBDTF, @kanyeId, @userId);
+VALUES ('Runaway', 543, 9, 'Hip-Hop', 'https://www.youtube.com/watch?v=Bm5iA4Zupek', @kanyeAlbumMBDTF, @kanyeId, @userId);
 SET @kanyeTrackRunaway = LAST_INSERT_ID();
 
 -- Samples (with SourceUrl pointing to the original song)
@@ -61,20 +61,20 @@ INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) V
  'Kanye West''s "Stronger" prominently samples the vocal hook from Daft Punk''s "Harder, Better, Faster, Stronger".',
  'https://www.youtube.com/watch?v=gAjR4_CbPpQ', @kanyeTrackStronger);
 
-INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
-('King Crimson "21st Century Schizoid Man"', 0,
- 'Kanye West''s "Power" samples the iconic guitar riff from King Crimson''s "21st Century Schizoid Man" (1969).',
- 'https://www.youtube.com/watch?v_J9xGxLkE', @kanyeTrackPower);
+ INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
+ ('King Crimson "21st Century Schizoid Man"', 0,
+  'Kanye West''s "Power" samples the iconic guitar riff from King Crimson''s "21st Century Schizoid Man" (1969).',
+  'https://www.youtube.com/watch?v=7OvW8Z7kiws', @kanyeTrackPower);
 
 INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
 ('Volcano Choir "Still" (vocal loop)', 1,
  '"Runaway" uses an interpolation of the vocal melody from Volcano Choir''s "Still".',
  NULL, @kanyeTrackRunaway);
 
-INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
-('George Duke "I Love You More"', 0,
- 'Daft Punk''s "Digital Love" samples the piano riff from George Duke''s "I Love You More" (1982).',
- 'https://www.youtube.com/watch?v=9wW1IUNHLRQ', @daftTrackDigitalLove);
+ INSERT INTO `Samples` (`Title`, `Type`, `Description`, `SourceUrl`, `TrackId`) VALUES
+ ('George Duke "I Love You More"', 0,
+  'Daft Punk''s "Digital Love" samples the piano riff from George Duke''s "I Love You More" (1982).',
+  'https://www.youtube.com/watch?v=IEibygqqLZc', @daftTrackDigitalLove);
 
 -- Artworks (album covers)
 INSERT INTO `Artworks` (`Title`, `ImageUrl`, `Description`, `AlbumId`) VALUES

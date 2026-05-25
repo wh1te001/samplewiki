@@ -327,7 +327,7 @@ input:focus, textarea:focus, select:focus {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -453,8 +453,8 @@ input:focus, textarea:focus, select:focus {
 
 .sample-comparison {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
     margin-top: 1rem;
 }
 

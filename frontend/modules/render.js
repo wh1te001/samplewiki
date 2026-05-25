@@ -2,7 +2,14 @@ function embedUrlFromUrl(url) {
     if (!url) return null;
     // YouTube
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (ytMatch) return { type: 'youtube', id: ytMatch[1], embed: `https://www.youtube.com/embed/${ytMatch[1]}` };
+    if (ytMatch) {
+        const origin = window.location.origin;
+        return {
+            type: 'youtube',
+            id: ytMatch[1],
+            embed: `https://www.youtube.com/embed/${ytMatch[1]}?origin=${encodeURIComponent(origin)}`
+        };
+    }
     // Bandcamp
     if (url.includes('bandcamp.com')) {
         const bcMatch = url.match(/bandcamp\.com\/track\/([a-zA-Z0-9_-]+)/);
@@ -16,7 +23,7 @@ function embedHtml(url, title, height = 315) {
     const info = embedUrlFromUrl(url);
     if (!info) return '';
     if (info.type === 'youtube') {
-        return `<iframe width="100%" height="${height}" src="${info.embed}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:10px;"></iframe>`;
+        return `<iframe width="100%" height="${height}" src="${info.embed}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="border-radius:10px;"></iframe>`;
     }
     if (info.type === 'bandcamp') {
         return `<iframe style="border:0;width:100%;height:${Math.min(height, 120)}px;" src="${info.embed}" seamless></iframe>`;
@@ -31,7 +38,7 @@ async function renderArtists(artists) {
         return;
     }
     artistsList.innerHTML = artists.map(artist => `
-        <div class="card" onclick="showArtistDetail(${artist.id})">
+        <div class="card" onclick="navigateTo('artist/${artist.id}')">
             <h3>${escapeHtml(artist.name)}</h3>
             <p>${artist.description ? truncateText(artist.description, 80) : 'Нет описания'}</p>
             <p style="font-size: 0.8rem; color: #8888a0;">
@@ -69,7 +76,7 @@ function renderArtistDetail(artist) {
                     <h3>Треки (${artist.tracks.length})</h3>
                     <div class="grid">
                         ${artist.tracks.map(track => `
-                            <div class="card" onclick="showTrackDetail(${track.id})">
+                            <div class="card" onclick="navigateTo('track/${track.id}')">
                                 <h4>${escapeHtml(track.title)}</h4>
                                 <p>⏱️ ${formatTime(track.durationSeconds)}</p>
                                 <p style="font-size: 0.85rem; color: #8888a0;">${track.genre || 'Жанр не указан'}</p>
@@ -89,15 +96,15 @@ function renderSearchResults(results) {
     let html = '';
     if (results.artists?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Исполнители</h3>`;
-        html += results.artists.map(a => `<div class="card" onclick="showArtistDetail(${a.id})"><h4>${escapeHtml(a.name)}</h4><p style="font-size:0.85rem;color:#8888a0;">Исполнитель</p></div>`).join('');
+        html += results.artists.map(a => `<div class="card" onclick="navigateTo('artist/${a.id}')"><h4>${escapeHtml(a.name)}</h4><p style="font-size:0.85rem;color:#8888a0;">Исполнитель</p></div>`).join('');
     }
     if (results.tracks?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Треки</h3>`;
-        html += results.tracks.map(t => `<div class="card" onclick="showTrackDetail(${t.id})"><h4>${escapeHtml(t.title)}</h4><p>⏱️ ${formatTime(t.durationSeconds)}</p><p style="font-size:0.85rem;color:#8888a0;">${t.genre || 'Жанр не указан'}</p></div>`).join('');
+        html += results.tracks.map(t => `<div class="card" onclick="navigateTo('track/${t.id}')"><h4>${escapeHtml(t.title)}</h4><p>⏱️ ${formatTime(t.durationSeconds)}</p><p style="font-size:0.85rem;color:#8888a0;">${t.genre || 'Жанр не указан'}</p></div>`).join('');
     }
     if (results.samples?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Сэмплы</h3>`;
-        html += results.samples.map(s => `<div class="card" onclick="showSampleDetail(${s.id})"><h4>${escapeHtml(s.title)}</h4><p style="font-size:0.85rem;">Тип: ${s.type}</p></div>`).join('');
+        html += results.samples.map(s => `<div class="card" onclick="navigateTo('sample/${s.id}')"><h4>${escapeHtml(s.title)}</h4><p style="font-size:0.85rem;">Тип: ${s.type}</p></div>`).join('');
     }
     container.innerHTML = html;
 }
@@ -144,7 +151,7 @@ function renderTrackDetail(track, samples) {
             <p style="color: #8888a0; margin-bottom: 1rem;">Нажми на сэмпл, чтобы увидеть детали</p>
             <div class="samples-list">
                 ${samples.map(s => `
-                    <div class="sample-card" onclick="showSampleDetail(${s.id})">
+                    <div class="sample-card" onclick="navigateTo('sample/${s.id}')">
                         <h4>${escapeHtml(s.title)} ${getSampleTypeBadge(s.type)}</h4>
                         ${s.description ? `<p>${truncateText(s.description, 100)}</p>` : ''}
                         <p style="font-size:0.85rem;color:#7c3aed;">Подробнее →</p>

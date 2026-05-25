@@ -15,13 +15,9 @@
 async function initializeApp() {
     console.log('🚀 Инициализация приложения SampleWiki...');
     
-    // Обновление состояния аутентификации в UI
     updateUIAuthState();
+    handleRoute();
     
-    // Загрузка исполнителей при старте
-    loadArtists();
-    
-    // Проверка токена при загрузке страницы
     if (!getToken()) {
         console.log('Пользователь не аутентифицирован');
     } else {
@@ -32,46 +28,72 @@ async function initializeApp() {
 // Инициализация при загрузке DOM
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-// ==================== УПРАВЛЕНИЕ СТРАНИЦАМИ ====================
+// ==================== РОУТИНГ ====================
 
 // Сохранение текущего контекста для навигации
 let currentArtistId = null;
 let currentTrackId = null;
 
 /**
+ * Навигация по hash-роуту
+ * @param {string} path - Путь (artists, search, history, artist/5, track/3, sample/2)
+ */
+function navigateTo(path) {
+    window.location.hash = path;
+}
+
+/**
+ * Скрыть все секции
+ */
+function hideAllSections() {
+    ['artistsSection', 'artistDetailSection', 'trackDetailSection', 
+     'sampleDetailSection', 'searchSection', 'historySection', 'authSection']
+        .forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+}
+
+/**
+ * Обработка текущего hash-роута
+ */
+function handleRoute() {
+    const hash = window.location.hash.slice(1) || 'artists';
+    
+    const artistMatch = hash.match(/^artist\/(\d+)$/);
+    const trackMatch = hash.match(/^track\/(\d+)$/);
+    const sampleMatch = hash.match(/^sample\/(\d+)$/);
+    
+    if (artistMatch) {
+        currentArtistId = parseInt(artistMatch[1]);
+        showArtistDetail(currentArtistId);
+    } else if (trackMatch) {
+        currentTrackId = parseInt(trackMatch[1]);
+        showTrackDetail(currentTrackId);
+    } else if (sampleMatch) {
+        showSampleDetail(parseInt(sampleMatch[1]));
+    } else if (hash === 'search') {
+        showPage('search');
+    } else if (hash === 'history') {
+        showPage('history');
+    } else {
+        showPage('artists');
+    }
+}
+
+// Слушаем изменения hash в URL
+window.addEventListener('hashchange', handleRoute);
+
+/**
  * Переключение между разделами приложения
- * @param {string} page - Название страницы (artists, search, history, artist, track, sample)
+ * @param {string} page - Название страницы (artists, search, history)
  */
 function showPage(page) {
-    // Скрытие всех секций
-    document.getElementById('artistsSection').style.display = 'none';
-    document.getElementById('artistDetailSection').style.display = 'none';
-    document.getElementById('trackDetailSection').style.display = 'none';
-    document.getElementById('sampleDetailSection').style.display = 'none';
-    document.getElementById('searchSection').style.display = 'none';
-    document.getElementById('historySection').style.display = 'none';
-    document.getElementById('authSection').style.display = 'none';
+    hideAllSections();
     
-    // Показ необходимой секции
     switch (page) {
         case 'artists':
             document.getElementById('artistsSection').style.display = 'block';
             loadArtists();
-            break;
-        case 'artist':
-            if (currentArtistId) {
-                document.getElementById('artistDetailSection').style.display = 'block';
-                showArtistDetail(currentArtistId);
-            }
-            break;
-        case 'track':
-            if (currentTrackId) {
-                document.getElementById('trackDetailSection').style.display = 'block';
-                showTrackDetail(currentTrackId);
-            }
-            break;
-        case 'sample':
-            document.getElementById('sampleDetailSection').style.display = 'block';
             break;
         case 'search':
             document.getElementById('searchSection').style.display = 'block';
@@ -89,6 +111,21 @@ function showPage(page) {
             document.getElementById('artistsSection').style.display = 'block';
     }
 }
+
+/**
+ * Вернуться к списку исполнителей
+ */
+function goBackToArtists() { navigateTo('artists'); }
+
+/**
+ * Вернуться к исполнителю из трека
+ */
+function goBackToArtist() { if (currentArtistId) navigateTo('artist/' + currentArtistId); }
+
+/**
+ * Вернуться к треку из сэмпла
+ */
+function goBackToTrack() { if (currentTrackId) navigateTo('track/' + currentTrackId); }
 
 // ==================== АУТЕНТИФИКАЦИЯ ====================
 
@@ -176,12 +213,10 @@ async function loadArtists() {
 async function showArtistDetail(id) {
     try {
         currentArtistId = id;
+        hideAllSections();
+        document.getElementById('artistDetailSection').style.display = 'block';
         const artist = await getArtistById(id);
         renderArtistDetail(artist);
-        
-        // Переключение на секцию деталей
-        document.getElementById('artistsSection').style.display = 'none';
-        document.getElementById('artistDetailSection').style.display = 'block';
     } catch (error) {
         showToast('Ошибка при загрузке деталей исполнителя: ' + error.message, 'error');
         console.error('Error loading artist details:', error);
@@ -195,13 +230,11 @@ async function showArtistDetail(id) {
 async function showTrackDetail(id) {
     try {
         currentTrackId = id;
+        hideAllSections();
+        document.getElementById('trackDetailSection').style.display = 'block';
         const track = await getTrackById(id);
         const samples = await getSamplesByTrack(id);
         renderTrackDetail(track, samples);
-        
-        // Переключение на секцию деталей трека
-        document.getElementById('artistDetailSection').style.display = 'none';
-        document.getElementById('trackDetailSection').style.display = 'block';
     } catch (error) {
         showToast('Ошибка при загрузке деталей трека: ' + error.message, 'error');
         console.error('Error loading track details:', error);
@@ -214,13 +247,11 @@ async function showTrackDetail(id) {
  */
 async function showSampleDetail(id) {
     try {
+        hideAllSections();
+        document.getElementById('sampleDetailSection').style.display = 'block';
         const sample = await getSampleById(id);
         const track = await getTrackById(sample.trackId);
         renderSampleDetail(track, sample);
-        
-        // Переключение на секцию деталей сэмпла
-        document.getElementById('trackDetailSection').style.display = 'none';
-        document.getElementById('sampleDetailSection').style.display = 'block';
     } catch (error) {
         showToast('Ошибка при загрузке деталей сэмпла: ' + error.message, 'error');
         console.error('Error loading sample details:', error);
@@ -292,10 +323,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ==================== ЭКСПОРТ ФУНКЦИЙ ====================
 
+window.navigateTo = navigateTo;
 window.showPage = showPage;
 window.showArtistDetail = showArtistDetail;
 window.showTrackDetail = showTrackDetail;
 window.showSampleDetail = showSampleDetail;
+window.goBackToArtists = goBackToArtists;
+window.goBackToArtist = goBackToArtist;
+window.goBackToTrack = goBackToTrack;
 window.toggleAuth = toggleAuth;
 window.toggleAuthMode = toggleAuthMode;
 window.performSearch = performSearch;
