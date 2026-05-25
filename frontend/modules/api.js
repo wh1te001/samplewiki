@@ -257,11 +257,12 @@ async function globalSearch(query) {
     if (!query) return { artists: [], tracks: [], samples: [] };
     
     try {
-        const [artists, tracks, samples] = await Promise.all([
+        const         [artists, tracks, samples] = await Promise.all([
             searchArtists(query, 5),
             searchTracks(query, 5),
             getSamples().then(s => s.filter(sample =>
-                sample.title.toLowerCase().includes(query.toLowerCase())
+                (sample.sampledTrackTitle && sample.sampledTrackTitle.toLowerCase().includes(query.toLowerCase())) ||
+                (sample.description && sample.description.toLowerCase().includes(query.toLowerCase()))
             ).slice(0, 5))
         ]);
         

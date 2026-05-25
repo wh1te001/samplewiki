@@ -99,20 +99,22 @@ public class SearchService
             return new List<SampleDto>();
 
         var results = await _dbContext.Samples
-            .Where(s => s.Title.Contains(query) || (s.Description != null && s.Description.Contains(query)))
+            .Include(s => s.SampledTrack).ThenInclude(t => t.Artist)
+            .Where(s => s.SampledTrack.Title.Contains(query) || (s.Description != null && s.Description.Contains(query)))
             .Take(limit)
-                .Select(s => new SampleDto
-                {
-                    Id = s.Id,
-                    Title = s.Title,
-                    Type = s.Type.ToString(),
-                    Description = s.Description,
-                    SourceUrl = s.SourceUrl,
-                    StartTimeSeconds = s.StartTimeSeconds,
-                    TrackId = s.TrackId,
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt
-                })
+            .Select(s => new SampleDto
+            {
+                Id = s.Id,
+                Type = s.Type.ToString(),
+                Description = s.Description,
+                StartTimeSeconds = s.StartTimeSeconds,
+                TrackId = s.TrackId,
+                SampledTrackId = s.SampledTrackId,
+                SampledTrackTitle = s.SampledTrack.Title,
+                SampledTrackArtistName = s.SampledTrack.Artist.Name,
+                CreatedAt = s.CreatedAt,
+                UpdatedAt = s.UpdatedAt
+            })
             .ToListAsync();
 
         _logger.LogInformation("🔍 Поиск сэмплов: '{Query}' - найдено {Count}", query, results.Count);

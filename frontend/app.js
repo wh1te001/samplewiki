@@ -250,8 +250,7 @@ async function showSampleDetail(id) {
         hideAllSections();
         document.getElementById('sampleDetailSection').style.display = 'block';
         const sample = await getSampleById(id);
-        const track = await getTrackById(sample.trackId);
-        renderSampleDetail(track, sample);
+        renderSampleDetail(sample.track, sample.sampledTrack, sample);
     } catch (error) {
         showToast('Ошибка при загрузке деталей сэмпла: ' + error.message, 'error');
         console.error('Error loading sample details:', error);

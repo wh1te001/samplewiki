@@ -26,15 +26,17 @@ public class SamplesController : ControllerBase
         try
         {
             var samples = await _dbContext.Samples
+                .Include(s => s.SampledTrack).ThenInclude(t => t.Artist)
                 .Select(s => new SampleDto
                 {
                     Id = s.Id,
-                    Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
-                    SourceUrl = s.SourceUrl,
                     StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
+                    SampledTrackId = s.SampledTrackId,
+                    SampledTrackTitle = s.SampledTrack.Title,
+                    SampledTrackArtistName = s.SampledTrack.Artist.Name,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
                 })
@@ -55,7 +57,10 @@ public class SamplesController : ControllerBase
         try
         {
             var sample = await _dbContext.Samples
-                .Include(s => s.Track)
+                .Include(s => s.Track).ThenInclude(t => t.Album).ThenInclude(a => a.Artworks)
+                .Include(s => s.Track).ThenInclude(t => t.Artist)
+                .Include(s => s.SampledTrack).ThenInclude(t => t.Album).ThenInclude(a => a.Artworks)
+                .Include(s => s.SampledTrack).ThenInclude(t => t.Artist)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (sample == null)
@@ -64,28 +69,15 @@ public class SamplesController : ControllerBase
             var result = new SampleDetailDto
             {
                 Id = sample.Id,
-                Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
-                SourceUrl = sample.SourceUrl,
                 StartTimeSeconds = sample.StartTimeSeconds,
                 TrackId = sample.TrackId,
+                SampledTrackId = sample.SampledTrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt,
-                Track = new TrackDto
-                {
-                    Id = sample.Track.Id,
-                    Title = sample.Track.Title,
-                    DurationSeconds = sample.Track.DurationSeconds,
-                    TrackNumber = sample.Track.TrackNumber,
-                    Genre = sample.Track.Genre,
-                    ResourceUrl = sample.Track.ResourceUrl,
-                    AlbumId = sample.Track.AlbumId,
-                    ArtistId = sample.Track.ArtistId,
-                    UserId = sample.Track.UserId,
-                    CreatedAt = sample.Track.CreatedAt,
-                    UpdatedAt = sample.Track.UpdatedAt
-                }
+                Track = MapTrackDto(sample.Track),
+                SampledTrack = MapTrackDto(sample.SampledTrack)
             };
 
             return Ok(result);
@@ -103,16 +95,18 @@ public class SamplesController : ControllerBase
         try
         {
             var samples = await _dbContext.Samples
+                .Include(s => s.SampledTrack).ThenInclude(t => t.Artist)
                 .Where(s => s.TrackId == trackId)
                 .Select(s => new SampleDto
                 {
                     Id = s.Id,
-                    Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
-                    SourceUrl = s.SourceUrl,
                     StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
+                    SampledTrackId = s.SampledTrackId,
+                    SampledTrackTitle = s.SampledTrack.Title,
+                    SampledTrackArtistName = s.SampledTrack.Artist.Name,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
                 })
@@ -141,12 +135,11 @@ public class SamplesController : ControllerBase
 
             var sample = new Sample
             {
-                Title = request.Title,
                 Type = sampleType,
                 Description = request.Description,
-                SourceUrl = request.SourceUrl,
                 StartTimeSeconds = request.StartTimeSeconds,
-                TrackId = request.TrackId
+                TrackId = request.TrackId,
+                SampledTrackId = request.SampledTrackId
             };
 
             _dbContext.Samples.Add(sample);
@@ -155,17 +148,16 @@ public class SamplesController : ControllerBase
             var result = new SampleDto
             {
                 Id = sample.Id,
-                Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
-                SourceUrl = sample.SourceUrl,
                 StartTimeSeconds = sample.StartTimeSeconds,
                 TrackId = sample.TrackId,
+                SampledTrackId = sample.SampledTrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt
             };
 
-            _logger.LogInformation("✅ Создан сэмпл: {Title}", request.Title);
+            _logger.LogInformation("✅ Создан сэмпл: Track {TrackId} samples {SampledTrackId}", request.TrackId, request.SampledTrackId);
 
             return CreatedAtAction(nameof(GetSampleById), new { id = sample.Id }, result);
         }
@@ -186,8 +178,6 @@ public class SamplesController : ControllerBase
             if (sample == null)
                 return NotFound(new { error = "Сэмпл не найден" });
 
-            if (!string.IsNullOrEmpty(request.Title))
-                sample.Title = request.Title;
             if (!string.IsNullOrEmpty(request.Type))
             {
                 if (!Enum.TryParse<SampleType>(request.Type, out var sampleType))
@@ -196,10 +186,10 @@ public class SamplesController : ControllerBase
             }
             if (!string.IsNullOrEmpty(request.Description))
                 sample.Description = request.Description;
-            if (!string.IsNullOrEmpty(request.SourceUrl))
-                sample.SourceUrl = request.SourceUrl;
             if (request.StartTimeSeconds.HasValue)
                 sample.StartTimeSeconds = request.StartTimeSeconds;
+            if (request.SampledTrackId.HasValue)
+                sample.SampledTrackId = request.SampledTrackId.Value;
 
             sample.UpdatedAt = DateTime.UtcNow;
 
@@ -208,17 +198,16 @@ public class SamplesController : ControllerBase
             var result = new SampleDto
             {
                 Id = sample.Id,
-                Title = sample.Title,
                 Type = sample.Type.ToString(),
                 Description = sample.Description,
-                SourceUrl = sample.SourceUrl,
                 StartTimeSeconds = sample.StartTimeSeconds,
                 TrackId = sample.TrackId,
+                SampledTrackId = sample.SampledTrackId,
                 CreatedAt = sample.CreatedAt,
                 UpdatedAt = sample.UpdatedAt
             };
 
-            _logger.LogInformation("✅ Обновлен сэмпл: {Title}", sample.Title);
+            _logger.LogInformation("✅ Обновлен сэмпл #{Id}", sample.Id);
 
             return Ok(result);
         }
@@ -242,7 +231,7 @@ public class SamplesController : ControllerBase
             _dbContext.Samples.Remove(sample);
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("✅ Удален сэмпл: {Title}", sample.Title);
+            _logger.LogInformation("✅ Удален сэмпл #{Id}", id);
 
             return Ok(new { message = "Сэмпл удален" });
         }
@@ -251,5 +240,24 @@ public class SamplesController : ControllerBase
             _logger.LogError("Ошибка при удалении сэмпла: {Message}", ex.Message);
             return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
         }
+    }
+
+    private static TrackDto MapTrackDto(Track t)
+    {
+        return new TrackDto
+        {
+            Id = t.Id,
+            Title = t.Title,
+            DurationSeconds = t.DurationSeconds,
+            TrackNumber = t.TrackNumber,
+            Genre = t.Genre,
+            ResourceUrl = t.ResourceUrl,
+            AlbumId = t.AlbumId,
+            ArtistId = t.ArtistId,
+            ArtistName = t.Artist?.Name,
+            UserId = t.UserId,
+            CreatedAt = t.CreatedAt,
+            UpdatedAt = t.UpdatedAt
+        };
     }
 }

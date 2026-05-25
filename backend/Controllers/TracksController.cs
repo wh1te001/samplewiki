@@ -65,7 +65,7 @@ public class TracksController : ControllerBase
                 .ThenInclude(a => a.Artist)
                 .Include(t => t.Artist)
                 .Include(t => t.User)
-                .Include(t => t.Samples)
+                .Include(t => t.Samples).ThenInclude(s => s.SampledTrack).ThenInclude(st => st.Artist)
                 .Include(t => t.Revisions)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -114,12 +114,13 @@ public class TracksController : ControllerBase
                 Samples = track.Samples.Select(s => new SampleDto
                 {
                     Id = s.Id,
-                    Title = s.Title,
                     Type = s.Type.ToString(),
                     Description = s.Description,
-                    SourceUrl = s.SourceUrl,
                     StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
+                    SampledTrackId = s.SampledTrackId,
+                    SampledTrackTitle = s.SampledTrack.Title,
+                    SampledTrackArtistName = s.SampledTrack.Artist.Name,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
                 }).ToList(),

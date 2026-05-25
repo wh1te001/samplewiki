@@ -2,16 +2,48 @@
 
 ## Выполнено
 - [x] SPA-навигация: hash-роутинг (#artists, #artist/5, #track/3, #sample/2) + кнопки браузера
-- [x] Страница сэмпла: горизонтальное сравнение (сетка 1fr auto 1fr)
-- [x] Расширена область контента (track-detail-layout: 800px → 1100px)
-- [x] YouTube embed: referrerpolicy + web-share (как в официальном коде YouTube)
-- [x] Исправлены битые YouTube ссылки в seed_sample_data.sql (5 из 7)
-- [x] Создан файл TODO.md для будущих сессий
+- [x] YouTube embed: `?origin=`, `referrerpolicy`, `web-share`
+- [x] Исправлены битые YouTube ссылки в seed (5 из 7)
+- [x] `StartTimeSeconds` добавлен в модель Sample (бэкенд + SQL + DTO)
+- [x] Таймкоды на странице трека: кликабельные бейджи, перематывают embed
+- [x] Таймкоды на странице сэмпла: кнопка «Сэмпл начинается на X:XX» → прыжок
+- [x] Все видео в 16:9 (aspect-ratio), без фиксированной высоты
+- [x] Страница сэмпла: два трека (сэмплер + источник) с ссылками на их страницы
+- [x] Sample model: вместо Title/SourceUrl → SampledTrackId (FK → Tracks)
+- [x] Новые артисты/треки в seed: King Crimson, Volcano Choir, George Duke
 
-## В процессе / ожидают
-- [ ] Проверить YouTube embed — нужно перезалить SQL и перетестировать
-- [ ] Таймкоды сэмплов (откуда и куда в треке)
+## Нужно сделать
+- [ ] **Авто-плей при клике на таймкод** — добавить `&autoplay=1` в `jumpToTime()`
+- [ ] **Чистые URL (History API + slug)** — вместо `/#track/3` сделать `/kanye-west/stronger`
+  - [ ] `serve.py` — HTTP-сервер с fallback на `index.html`
+  - [ ] `slugify()` — функция для генерации ЧПУ из названий
+  - [ ] Роутинг: `hashchange` → `pushState` + `popstate`, парсинг `pathname`
+  - [ ] Обновить все `navigateTo()` и ссылки в `render.js`
+  - [ ] Артисты: `/{artist-slug}`
+  - [ ] Треки: `/{artist-slug}/{track-slug}`
+  - [ ] Сэмплы: `/sample/{id}/{artist-slug}-samples-{artist-slug}-{title-slug}`
+- [ ] **Переделать лейаут** — привести дизайн к whosampled-like
+- [ ] **Разобраться со всем остальным** — рефакторинг, баги, доработки
+
+## В планах (дальние)
 - [ ] Раздел «Похожие треки/исполнители»
-- [ ] Страница артиста — показать какие треки сэмплировали его песни (как на whosampled)
+- [ ] Страница артиста — показать какие треки сэмплировали его песни
 - [ ] Рейтинг/комментарии для сэмплов
-- [ ] Улучшить UI по мотивам whosampled.com (сравнение треков, навигация)
+- [ ] Показать на странице трека: какие другие треки сэмплируют ЭТОТ трек (reverse samples)
+
+## Запуск проекта
+```bash
+# 1. MariaDB — через XAMPP (phpMyAdmin на localhost/phpmyadmin)
+#    или через командную строку:
+mysql -u root < backend/sql/create_tables.sql
+mysql -u root < backend/sql/seed_sample_data.sql
+
+# 2. Бэкенд (ASP.NET Core 8.0)
+cd backend
+dotnet run
+
+# 3. Фронтенд (любой HTTP-сервер, не file://!)
+cd frontend
+python -m http.server 8000
+# Открыть: http://localhost:8000
+```

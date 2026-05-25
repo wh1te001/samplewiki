@@ -62,17 +62,18 @@ CREATE TABLE `Tracks` (
 
 CREATE TABLE `Samples` (
   `Id` INT NOT NULL AUTO_INCREMENT,
-  `Title` VARCHAR(200) NOT NULL,
   `Type` INT NOT NULL DEFAULT 0 COMMENT '0=Sample, 1=Interpolation, 2=Cover, 3=Remix',
   `Description` TEXT NULL,
-  `SourceUrl` VARCHAR(500) NULL COMMENT 'URL of the original song being sampled',
   `StartTimeSeconds` INT NULL COMMENT 'Timecode where the sample starts (in seconds)',
-  `TrackId` INT NOT NULL,
+  `TrackId` INT NOT NULL COMMENT 'Track that contains the sample',
+  `SampledTrackId` INT NOT NULL COMMENT 'Track being sampled',
   `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`Id`),
   KEY `IX_Samples_TrackId` (`TrackId`),
-  CONSTRAINT `FK_Samples_Track` FOREIGN KEY (`TrackId`) REFERENCES `Tracks` (`Id`) ON DELETE CASCADE
+  KEY `IX_Samples_SampledTrackId` (`SampledTrackId`),
+  CONSTRAINT `FK_Samples_Track` FOREIGN KEY (`TrackId`) REFERENCES `Tracks` (`Id`) ON DELETE RESTRICT,
+  CONSTRAINT `FK_Samples_SampledTrack` FOREIGN KEY (`SampledTrackId`) REFERENCES `Tracks` (`Id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `Artworks` (

@@ -122,7 +122,7 @@ function renderSearchResults(results) {
     }
     if (results.samples?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Сэмплы</h3>`;
-        html += results.samples.map(s => `<div class="card" onclick="navigateTo('sample/${s.id}')"><h4>${escapeHtml(s.title)}</h4><p style="font-size:0.85rem;">Тип: ${s.type}</p></div>`).join('');
+        html += results.samples.map(s => `<div class="card" onclick="navigateTo('sample/${s.id}')"><h4>${escapeHtml(s.sampledTrackTitle || 'Сэмпл')}</h4><p style="font-size:0.85rem;color:#8888a0;">${escapeHtml(s.sampledTrackArtistName || '')}</p><p style="font-size:0.85rem;">Тип: ${s.type}</p></div>`).join('');
     }
     container.innerHTML = html;
 }
@@ -170,7 +170,8 @@ function renderTrackDetail(track, samples) {
             <div class="samples-list">
                 ${samples.map(s => `
                     <div class="sample-card" onclick="navigateTo('sample/${s.id}')">
-                        <h4>${escapeHtml(s.title)} ${getSampleTypeBadge(s.type)}</h4>
+                        <h4>${escapeHtml(s.sampledTrackTitle)} ${getSampleTypeBadge(s.type)}</h4>
+                        <p style="font-size:0.85rem;color:#8888a0;margin-bottom:0.5rem;">${escapeHtml(s.sampledTrackArtistName || '')}</p>
                         ${s.startTimeSeconds != null
                             ? `<span class="sample-timecode" data-url="${escapeHtml(track.resourceUrl)}" data-title="${escapeHtml(track.title)}" data-seconds="${s.startTimeSeconds}" onclick="event.stopPropagation(); jumpTrackEmbed(this)">⏱ ${formatTime(s.startTimeSeconds)}</span>`
                             : ''}
@@ -205,36 +206,36 @@ function renderTrackDetail(track, samples) {
         </div>`;
 }
 
-function renderSampleDetail(originalTrack, sample) {
+function renderSampleDetail(samplerTrack, sampledTrack, sample) {
     const detail = document.getElementById('sampleDetail');
-    const hasSourceEmbed = sample.sourceUrl && !!embedUrlFromUrl(sample.sourceUrl);
 
     detail.innerHTML = `
         <div class="track-detail-layout">
             <div class="track-info-card">
-                <h2 style="text-align:center;margin-bottom:1.5rem;">${escapeHtml(originalTrack.title)} заимствует из ${escapeHtml(sample.title)}</h2>
+                <h2 style="text-align:center;margin-bottom:1.5rem;">${escapeHtml(samplerTrack.title)} заимствует из ${escapeHtml(sampledTrack.title)}</h2>
                 <div class="sample-video-grid">
                     <div class="sample-video-col">
                         <h3 class="sample-video-label">В ЭТОМ ТРЕКЕ</h3>
-                        <div class="embed-16-9" id="track-embed-container">${embedHtml(originalTrack.resourceUrl, originalTrack.title)}</div>
+                        <div class="embed-16-9" id="track-embed-container">${embedHtml(samplerTrack.resourceUrl, samplerTrack.title)}</div>
                         <div style="margin-top:0.75rem;">
-                            <p style="font-weight:600;">${escapeHtml(originalTrack.title)}</p>
-                            <p style="color:#8888a0;font-size:0.85rem;">${escapeHtml(originalTrack.artist ? originalTrack.artist.name : 'Неизвестен')}</p>
+                            <p style="font-weight:600;"><a href="#track/${samplerTrack.id}" style="color:#7c3aed;text-decoration:none;">${escapeHtml(samplerTrack.title)}</a></p>
+                            <p style="color:#8888a0;font-size:0.85rem;">${escapeHtml(samplerTrack.artistName || 'Неизвестен')}</p>
                             ${sample.startTimeSeconds != null
-                                ? `<span class="sample-timecode-big" data-url="${escapeHtml(originalTrack.resourceUrl)}" data-title="${escapeHtml(originalTrack.title)}" data-seconds="${sample.startTimeSeconds}" onclick="jumpTrackEmbed(this)">⏱ ${formatTime(sample.startTimeSeconds)}</span>`
+                                ? `<span class="sample-timecode-big" data-url="${escapeHtml(samplerTrack.resourceUrl)}" data-title="${escapeHtml(samplerTrack.title)}" data-seconds="${sample.startTimeSeconds}" onclick="jumpTrackEmbed(this)">⏱ ${formatTime(sample.startTimeSeconds)}</span>`
                                 : ''}
-                            <div style="margin-top:0.5rem;"><a href="${escapeHtml(originalTrack.resourceUrl)}" target="_blank" class="listen-btn">Слушать трек →</a></div>
+                            <div style="margin-top:0.5rem;"><a href="#track/${samplerTrack.id}" class="listen-btn">К треку →</a></div>
                         </div>
                     </div>
                     <div class="sample-video-col">
                         <h3 class="sample-video-label">ОТКУДА ПОЗАИМСТВОВАНО</h3>
-                        ${sample.sourceUrl
-                            ? `<div class="embed-16-9">${embedHtml(sample.sourceUrl, sample.title)}</div>`
+                        ${sampledTrack.resourceUrl
+                            ? `<div class="embed-16-9">${embedHtml(sampledTrack.resourceUrl, sampledTrack.title)}</div>`
                             : '<div class="embed-16-9" style="background:#f8f6fc;display:flex;align-items:center;justify-content:center;color:#8888a0;">Видео не добавлено</div>'}
                         <div style="margin-top:0.75rem;">
-                            <p style="font-weight:600;">${escapeHtml(sample.title)} ${getSampleTypeBadge(sample.type)}</p>
+                            <p style="font-weight:600;"><a href="#track/${sampledTrack.id}" style="color:#7c3aed;text-decoration:none;">${escapeHtml(sampledTrack.title)}</a> ${getSampleTypeBadge(sample.type)}</p>
+                            <p style="color:#8888a0;font-size:0.85rem;">${escapeHtml(sampledTrack.artistName || 'Неизвестен')}</p>
                             ${sample.description ? `<p style="color:#8888a0;font-size:0.85rem;">${truncateText(sample.description, 120)}</p>` : ''}
-                            ${sample.sourceUrl ? `<div style="margin-top:0.5rem;"><a href="${escapeHtml(sample.sourceUrl)}" target="_blank" class="listen-btn">Слушать оригинал →</a></div>` : ''}
+                            ${sampledTrack.resourceUrl ? `<div style="margin-top:0.5rem;"><a href="#track/${sampledTrack.id}" class="listen-btn">К треку →</a></div>` : ''}
                         </div>
                     </div>
                 </div>

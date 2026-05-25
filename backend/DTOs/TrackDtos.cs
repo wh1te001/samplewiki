@@ -33,6 +33,7 @@ public class TrackDto
     public string? ResourceUrl { get; set; }
     public int AlbumId { get; set; }
     public int ArtistId { get; set; }
+    public string? ArtistName { get; set; }
     public int UserId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

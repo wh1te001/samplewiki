@@ -76,15 +76,19 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Sample>(entity =>
         {
             entity.HasKey(s => s.Id);
-            entity.Property(s => s.Title).IsRequired().HasMaxLength(200);
-            entity.Property(s => s.SourceUrl).HasMaxLength(500);
 
             entity.HasOne(s => s.Track)
                 .WithMany(t => t.Samples)
                 .HasForeignKey(s => s.TrackId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(s => s.SampledTrack)
+                .WithMany()
+                .HasForeignKey(s => s.SampledTrackId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(s => s.TrackId);
+            entity.HasIndex(s => s.SampledTrackId);
         });
 
         modelBuilder.Entity<Artwork>(entity =>
