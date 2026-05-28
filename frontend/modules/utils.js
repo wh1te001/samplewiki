@@ -2,15 +2,8 @@
  * utils.js - Утилиты и вспомогательные функции
  */
 
-/** Максимальное время жизни токена (в миллисекундах) */
-const TOKEN_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 часа
+const TOKEN_EXPIRY_TIME = 24 * 60 * 60 * 1000;
 
-/**
- * Показать уведомление (toast)
- * @param {string} message - Текст сообщения
- * @param {string} type - Тип: 'info', 'success', 'error' (default: 'info')
- * @param {number} duration - Продолжительность в миллисекундах (default: 3000)
- */
 function showToast(message, type = 'info', duration = 3000) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -22,11 +15,6 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
-/**
- * Форматирование времени в секундах (MM:SS или HH:MM:SS)
- * @param {number} seconds - Количество секунд
- * @returns {string} Отформатированная строка
- */
 function formatTime(seconds) {
     if (!seconds || isNaN(seconds)) return '00:00';
     
@@ -40,11 +28,6 @@ function formatTime(seconds) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-/**
- * Форматирование даты
- * @param {string|Date} date - ISO дата или объект Date
- * @returns {string} Отформатированная дата
- */
 function formatDate(date) {
     if (!date) return '';
     
@@ -58,72 +41,21 @@ function formatDate(date) {
     return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
-/**
- * Проверка валидности JWT токена
- * @param {string} token - JWT токен
- * @returns {boolean} Валиден ли токен
- */
-function isTokenValid(token) {
-    if (!token) return false;
-    
-    const stored = sessionStorage.getItem('tokenExpiry');
-    if (!stored) return false;
-    
-    return Date.now() < parseInt(stored);
-}
-
-/**
- * Сохранение JWT токена в sessionStorage
- * @param {string} token - JWT токен
- */
-function saveToken(token) {
-    sessionStorage.setItem('token', token);
-    sessionStorage.setItem('tokenExpiry', (Date.now() + TOKEN_EXPIRY_TIME).toString());
-}
-
-/**
- * Получение JWT токена из sessionStorage
- * @returns {string|null} JWT токен или null
- */
-function getToken() {
-    if (!isTokenValid()) {
-        clearToken();
-        return null;
-    }
-    return sessionStorage.getItem('token');
-}
-
-/**
- * Удаление JWT токена из sessionStorage
- */
-function clearToken() {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('tokenExpiry');
-}
-
-/**
- * Получение информации о пользователе из sessionStorage
- * @returns {object|null} Информация о пользователе
- */
 function getCurrentUser() {
-    const user = sessionStorage.getItem('currentUser');
+    const user = localStorage.getItem('currentUser');
     return user ? JSON.parse(user) : null;
 }
 
-/**
- * Сохранение информации о пользователе в sessionStorage
- * @param {object} user - Информация о пользователе
- */
 function saveCurrentUser(user) {
-    sessionStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem('currentUser', JSON.stringify(user));
 }
 
-/**
- * Проверка аутентифицирован ли пользователь
- * @returns {boolean}
- */
+function clearCurrentUser() {
+    localStorage.removeItem('currentUser');
+}
+
 function isAuthenticated() {
-    return !!getToken() && !!getCurrentUser();
+    return !!getCurrentUser();
 }
 
 /**

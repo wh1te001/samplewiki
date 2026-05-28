@@ -1,8 +1,11 @@
 USE `samplewiki`;
 
-INSERT INTO `Users` (`Username`, `Email`, `PasswordHash`, `Role`, `IsActive`)
-VALUES ('seeduser', 'seed@example.com', '$2a$11$K4YfGqJ1e4YHIpRHiFJY0uUq0l0v0z0y0w0x0v0u0t0s0r0q0p0o0n0m0l0', 1, 1);
-SET @userId = LAST_INSERT_ID();
+-- Пароль для admin: Admin@123 (BCrypt hash, удовлетворяет требованиям сложности)
+-- Пароль для seeduser: User@test1
+INSERT INTO `Users` (`Username`, `Email`, `PasswordHash`, `Role`, `IsActive`) VALUES
+('admin', 'admin@samplewiki.local', '$2a$11$xzaiHGSKAcFo0cVBxqMLwu303XeYessZj3FU0tFVDZscqnhmwkaY2', 2, 1),
+('seeduser', 'seed@example.com', '$2a$11$FN5DOxn1/w6isjdVO43sWOHT5MOoa.qHExQViGvKb1g1Q0wwGKhXO', 1, 1);
+SET @userId = (SELECT `Id` FROM `Users` WHERE `Username` = 'seeduser');
 
 -- ==================== ARTISTS ====================
 INSERT INTO `Artists` (`Name`, `Description`, `WikiLink`) VALUES

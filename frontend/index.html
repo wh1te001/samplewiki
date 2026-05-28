@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.write(`<base href="${document.querySelector('script[src*="app.js"]').src.replace(/app\.js.*$/, '')}">`)</script>
     <title>SampleWiki - Каталог сэмплов</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,12 +12,12 @@
     <nav class="navbar">
         <div class="container">
             <div class="navbar-brand">
-                <h1>🎵 SampleWiki</h1>
+                <h1 style="cursor:pointer;" onclick="navigateTo('')">SampleWiki</h1>
             </div>
             <ul class="navbar-menu" id="navMenu">
-                <li><a href="#artists" onclick="navigateTo('artists')">Исполнители</a></li>
-                <li><a href="#search" onclick="navigateTo('search')">Поиск</a></li>
-                <li><a href="#history" onclick="navigateTo('history')">История</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('')">Исполнители</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('search')">Поиск</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('history')">История</a></li>
                 <li id="authNav"><a href="#" onclick="toggleAuth()">Вход</a></li>
             </ul>
         </div>
@@ -26,15 +27,27 @@
     <div class="container main-content">
         <!-- СЕКЦИЯ АУТЕНТИФИКАЦИИ -->
         <section id="authSection" class="auth-section" style="display: none;">
+            <div class="auth-overlay" onclick="toggleAuth()"></div>
             <div class="auth-container">
                 <div class="auth-form">
+                    <button class="auth-close" onclick="toggleAuth()">&times;</button>
                     <h2 id="authTitle">Вход</h2>
-                    <form id="authForm">
-                        <input type="text" id="usernameInput" placeholder="Имя пользователя" required>
-                        <input type="email" id="emailInput" placeholder="Email (только регистрация)" style="display: none;">
-                        <input type="password" id="passwordInput" placeholder="Пароль" required>
-                        <button type="submit" id="authButton">Вход</button>
-                        <button type="button" id="toggleAuthMode" onclick="toggleAuthMode()" style="background-color: #a78bfa;">Регистрация</button>
+                    <form id="authForm" novalidate>
+                        <div class="auth-field">
+                            <input type="text" id="usernameInput" placeholder="Имя пользователя" required autocomplete="username">
+                        </div>
+                        <div class="auth-field">
+                            <input type="email" id="emailInput" placeholder="Email" autocomplete="email">
+                        </div>
+                        <div class="auth-field">
+                            <input type="password" id="passwordInput" placeholder="Пароль" required autocomplete="current-password">
+                        </div>
+                        <div class="auth-field" id="passwordConfirmField" style="display:none;">
+                            <input type="password" id="passwordConfirmInput" placeholder="Подтвердите пароль" autocomplete="new-password">
+                        </div>
+                        <div id="authError" class="auth-error" style="display:none;"></div>
+                        <button type="submit" id="authButton" class="auth-submit">Вход</button>
+                        <button type="button" id="toggleAuthMode" onclick="toggleAuthMode()" class="auth-toggle">Зарегистрироваться</button>
                     </form>
                 </div>
             </div>
@@ -50,7 +63,7 @@
 
         <!-- СЕКЦИЯ ДЕТАЛЕЙ ИСПОЛНИТЕЛЯ -->
         <section id="artistDetailSection" class="section" style="display: none;">
-            <button onclick="navigateTo('artists')" class="btn-back">← Назад к исполнителям</button>
+            <button onclick="navigateTo('')" class="btn-back">← Назад к исполнителям</button>
             <div id="artistDetail"></div>
         </section>
 

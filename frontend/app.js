@@ -9,20 +9,31 @@
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 
-/**
- * Инициализация приложения при загрузке страницы
- */
-async function initializeApp() {
-    console.log('🚀 Инициализация приложения SampleWiki...');
-    
-    updateUIAuthState();
-    handleRoute();
-    
-    if (!getToken()) {
-        console.log('Пользователь не аутентифицирован');
-    } else {
-        console.log('✅ Пользователь аутентифицирован:', getCurrentUser().username);
+// Slug maps for route resolution
+let artistSlugMap = {};
+let trackSlugMap = {};
+
+async function buildSlugMaps() {
+    try {
+        const [artists, tracks] = await Promise.all([getArtists(), getTracks()]);
+        artists.forEach(a => { artistSlugMap[slugify(a.name)] = a; });
+        tracks.forEach(t => {
+            const artist = artists.find(a => a.id === t.artistId);
+            const key = (artist ? slugify(artist.name) : 'unknown') + '/' + slugify(t.title);
+            trackSlugMap[key] = t;
+        });
+    } catch (e) {
+        console.error('Failed to build slug maps:', e);
     }
+}
+
+async function initializeApp() {
+    console.log('Инициализация приложения SampleWiki...');
+
+    await checkAuth();
+    updateUIAuthState();
+    await buildSlugMaps();
+    handleRoute();
 }
 
 // Инициализация при загрузке DOM
@@ -31,15 +42,23 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 // ==================== РОУТИНГ ====================
 
 // Сохранение текущего контекста для навигации
-let currentArtistId = null;
-let currentTrackId = null;
+let currentArtistSlug = null;
+let currentTrackSlug = null;
 
 /**
- * Навигация по hash-роуту
- * @param {string} path - Путь (artists, search, history, artist/5, track/3, sample/2)
+ * Навигация (History API)
+ * @param {string} path - Путь (artists, search, history, daft-punk, daft-punk/digital-love, sample/2/...)
  */
 function navigateTo(path) {
-    window.location.hash = path;
+    path = path.replace(/^\/+/, '');
+    if (!path) {
+        // Home: go to the app root (from <base> href)
+        const base = (document.querySelector('base')?.getAttribute('href') || '/').replace(/\/+$/, '') + '/';
+        history.pushState({}, '', base);
+    } else {
+        history.pushState({}, '', path);
+    }
+    handleRoute();
 }
 
 /**
@@ -54,34 +73,82 @@ function hideAllSections() {
 }
 
 /**
- * Обработка текущего hash-роута
+ * Обработка текущего роута (из pathname)
  */
 function handleRoute() {
-    const hash = window.location.hash.slice(1) || 'artists';
-    
-    const artistMatch = hash.match(/^artist\/(\d+)$/);
-    const trackMatch = hash.match(/^track\/(\d+)$/);
-    const sampleMatch = hash.match(/^sample\/(\d+)$/);
-    
-    if (artistMatch) {
-        currentArtistId = parseInt(artistMatch[1]);
-        showArtistDetail(currentArtistId);
-    } else if (trackMatch) {
-        currentTrackId = parseInt(trackMatch[1]);
-        showTrackDetail(currentTrackId);
-    } else if (sampleMatch) {
-        showSampleDetail(parseInt(sampleMatch[1]));
-    } else if (hash === 'search') {
-        showPage('search');
-    } else if (hash === 'history') {
-        showPage('history');
-    } else {
-        showPage('artists');
+    // Strip base path (from <base> href or script src) to get the app-relative path
+    const base = (document.querySelector('base')?.getAttribute('href') || '').replace(/^https?:\/\/[^/]+/, '');
+    const basePath = base.replace(/\/+$/, '');
+    const rawPath = window.location.pathname.replace(/\/+$/, '') || '';
+    const appPath = rawPath.startsWith(basePath) ? rawPath.slice(basePath.length) || '/' : rawPath;
+    const path = appPath.replace(/\/+$/, '') || '';
+    const parts = path.split('/').filter(Boolean);
+
+    // Sample: /sample/624719/...
+    if (parts.length >= 2 && parts[0] === 'sample') {
+        showSampleDetail(parseInt(parts[1]));
+        return;
     }
+
+    // Track by ID (fallback): /track/5
+    if (parts.length === 2 && parts[0] === 'track') {
+        showTrackDetail(parseInt(parts[1]));
+        return;
+    }
+
+    // Artist by ID (fallback): /artist/5
+    if (parts.length === 2 && parts[0] === 'artist') {
+        showArtistDetail(parseInt(parts[1]));
+        return;
+    }
+
+    // Track: /artist-slug/track-slug
+    if (parts.length === 2) {
+        const key = parts[0] + '/' + parts[1];
+        const track = trackSlugMap[key];
+        if (track) {
+            currentArtistSlug = parts[0];
+            currentTrackSlug = parts[1];
+            showTrackDetail(track.id);
+            return;
+        }
+    }
+
+    // Artist: /artist-slug
+    if (parts.length === 1 && parts[0] && parts[0] !== 'artists' && parts[0] !== 'search' && parts[0] !== 'history') {
+        const artist = artistSlugMap[parts[0]];
+        if (artist) {
+            currentArtistSlug = parts[0];
+            currentTrackSlug = null;
+            showArtistDetail(artist.id);
+            return;
+        }
+    }
+
+    // Static pages
+    if (path === '/search') { showPage('search'); return; }
+    if (path === '/history') { showPage('history'); return; }
+
+    // Default: artists list
+    currentArtistSlug = null;
+    currentTrackSlug = null;
+    showPage('artists');
 }
 
-// Слушаем изменения hash в URL
-window.addEventListener('hashchange', handleRoute);
+// Слушаем popstate (кнопки браузера)
+window.addEventListener('popstate', handleRoute);
+
+// Hash fallback (старые ссылки /#sample/1 и т.д.)
+function handleHashFallback() {
+    const hash = window.location.hash.replace(/^#/, '');
+    if (hash) {
+        history.replaceState({}, '', hash);
+        handleRoute();
+    }
+}
+window.addEventListener('hashchange', handleHashFallback);
+// Также проверить хэш при первой загрузке
+handleHashFallback();
 
 /**
  * Переключение между разделами приложения
@@ -89,7 +156,7 @@ window.addEventListener('hashchange', handleRoute);
  */
 function showPage(page) {
     hideAllSections();
-    
+
     switch (page) {
         case 'artists':
             document.getElementById('artistsSection').style.display = 'block';
@@ -115,17 +182,17 @@ function showPage(page) {
 /**
  * Вернуться к списку исполнителей
  */
-function goBackToArtists() { navigateTo('artists'); }
+function goBackToArtists() { navigateTo(''); }
 
 /**
  * Вернуться к исполнителю из трека
  */
-function goBackToArtist() { if (currentArtistId) navigateTo('artist/' + currentArtistId); }
+function goBackToArtist() { if (currentArtistSlug) navigateTo(currentArtistSlug); }
 
 /**
  * Вернуться к треку из сэмпла
  */
-function goBackToTrack() { if (currentTrackId) navigateTo('track/' + currentTrackId); }
+function goBackToTrack() { if (currentArtistSlug && currentTrackSlug) navigateTo(currentArtistSlug + '/' + currentTrackSlug); }
 
 // ==================== АУТЕНТИФИКАЦИЯ ====================
 
@@ -137,28 +204,9 @@ let isRegisterMode = false;
  */
 function toggleAuthMode() {
     isRegisterMode = !isRegisterMode;
-    
-    const authTitle = document.getElementById('authTitle');
-    const authButton = document.getElementById('authButton');
-    const emailInput = document.getElementById('emailInput');
-    const toggleButton = document.getElementById('toggleAuthMode');
-    
-    if (isRegisterMode) {
-        authTitle.textContent = 'Регистрация';
-        authButton.textContent = 'Зарегистрироваться';
-        emailInput.style.display = 'block';
-        emailInput.required = true;
-        toggleButton.textContent = 'У меня уже есть аккаунт';
-    } else {
-        authTitle.textContent = 'Вход';
-        authButton.textContent = 'Вход';
-        emailInput.style.display = 'none';
-        emailInput.required = false;
-        toggleButton.textContent = 'Зарегистрироваться';
-    }
-    
-    // Очистка формы
+    setAuthModeUI(isRegisterMode ? 'register' : 'login');
     document.getElementById('authForm').reset();
+    document.getElementById('authError').style.display = 'none';
 }
 
 /**
@@ -168,10 +216,37 @@ function toggleAuth() {
     const authSection = document.getElementById('authSection');
     const isVisible = authSection.style.display !== 'none';
     authSection.style.display = isVisible ? 'none' : 'flex';
-    
+
     if (!isVisible) {
         isRegisterMode = false;
-        toggleAuthMode(); // Сброс в режим входа
+        setAuthModeUI('login');
+        document.getElementById('authError').style.display = 'none';
+        document.getElementById('authForm').reset();
+    }
+}
+
+function setAuthModeUI(mode) {
+    const authTitle = document.getElementById('authTitle');
+    const authButton = document.getElementById('authButton');
+    const emailInput = document.getElementById('emailInput');
+    const passwordConfirmField = document.getElementById('passwordConfirmField');
+    const toggleButton = document.getElementById('toggleAuthMode');
+
+    if (mode === 'register') {
+        authTitle.textContent = 'Регистрация';
+        authButton.textContent = 'Зарегистрироваться';
+        emailInput.placeholder = 'Email';
+        emailInput.style.display = 'block';
+        emailInput.required = true;
+        passwordConfirmField.style.display = 'block';
+        toggleButton.textContent = 'У меня уже есть аккаунт';
+    } else {
+        authTitle.textContent = 'Вход';
+        authButton.textContent = 'Вход';
+        emailInput.style.display = 'none';
+        emailInput.required = false;
+        passwordConfirmField.style.display = 'none';
+        toggleButton.textContent = 'Зарегистрироваться';
     }
 }
 
@@ -181,11 +256,34 @@ document.addEventListener('DOMContentLoaded', function() {
     if (authForm) {
         authForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const username = document.getElementById('usernameInput').value;
-            const email = document.getElementById('emailInput').value;
+
+            const errorEl = document.getElementById('authError');
+            errorEl.style.display = 'none';
+
+            const username = document.getElementById('usernameInput').value.trim();
+            const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value;
-            
+
+            if (!username || !password) {
+                errorEl.textContent = 'Заполните имя пользователя и пароль';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (isRegisterMode) {
+                const passwordConfirm = document.getElementById('passwordConfirmInput').value;
+                if (password !== passwordConfirm) {
+                    errorEl.textContent = 'Пароли не совпадают';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                if (password.length < 8) {
+                    errorEl.textContent = 'Пароль должен быть минимум 8 символов';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+            }
+
             await handleAuthSubmit(username, email, password, isRegisterMode);
         });
     }
@@ -250,6 +348,9 @@ async function showSampleDetail(id) {
         hideAllSections();
         document.getElementById('sampleDetailSection').style.display = 'block';
         const sample = await getSampleById(id);
+        // Track context for back button
+        currentArtistSlug = slugify(sample.track.artistName || sample.track.artist?.name || '');
+        currentTrackSlug = slugify(sample.track.title);
         renderSampleDetail(sample.track, sample.sampledTrack, sample);
     } catch (error) {
         showToast('Ошибка при загрузке деталей сэмпла: ' + error.message, 'error');

@@ -1,32 +1,46 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SampleWiki.DTOs;
 
-/// <summary>DTO для регистрации пользователя</summary>
 public class RegisterRequest
 {
+    [Required(ErrorMessage = "Имя пользователя обязательно")]
+    [MinLength(3, ErrorMessage = "Имя пользователя должно быть минимум 3 символа")]
+    [MaxLength(50, ErrorMessage = "Имя пользователя должно быть максимум 50 символов")]
+    [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Имя пользователя может содержать только буквы, цифры и _")]
     public required string Username { get; set; }
+
+    [Required(ErrorMessage = "Email обязателен")]
+    [EmailAddress(ErrorMessage = "Некорректный формат email")]
+    [MaxLength(100, ErrorMessage = "Email слишком длинный")]
     public required string Email { get; set; }
+
+    [Required(ErrorMessage = "Пароль обязателен")]
+    [MinLength(8, ErrorMessage = "Пароль должен быть минимум 8 символов")]
+    [MaxLength(128, ErrorMessage = "Пароль слишком длинный")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$",
+        ErrorMessage = "Пароль должен содержать заглавную букву, строчную букву, цифру и спецсимвол")]
     public required string Password { get; set; }
 }
 
-/// <summary>DTO для входа пользователя</summary>
 public class LoginRequest
 {
+    [Required(ErrorMessage = "Имя пользователя обязательно")]
     public required string Username { get; set; }
+
+    [Required(ErrorMessage = "Пароль обязателен")]
     public required string Password { get; set; }
 }
 
-/// <summary>DTO для ответа с JWT токеном</summary>
 public class AuthResponse
 {
     public int UserId { get; set; }
     public required string Username { get; set; }
     public required string Email { get; set; }
-    public required string Token { get; set; }
     public required string Role { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
 
-/// <summary>DTO для информации о пользователе</summary>
 public class UserDto
 {
     public int Id { get; set; }

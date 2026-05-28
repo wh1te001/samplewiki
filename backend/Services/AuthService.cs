@@ -9,7 +9,6 @@ using SampleWiki.Models;
 
 namespace SampleWiki.Services;
 
-/// <summary>Сервис для аутентификации и управления JWT токенами</summary>
 public class AuthService
 {
     private readonly AppDbContext _dbContext;
@@ -23,10 +22,8 @@ public class AuthService
         _logger = logger;
     }
 
-    /// <summary>Регистрация нового пользователя</summary>
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        // Проверка наличия пользователя
         var existingUser = _dbContext.Users
             .FirstOrDefault(u => u.Username == request.Username || u.Email == request.Email);
 
@@ -35,7 +32,6 @@ public class AuthService
             throw new InvalidOperationException("Пользователь с таким именем или email уже существует");
         }
 
-        // Создание нового пользователя
         var user = new User
         {
             Username = request.Username,
@@ -48,12 +44,11 @@ public class AuthService
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
 
-        _logger.LogInformation("✅ Пользователь зарегистрирован: {Username}", request.Username);
+        _logger.LogInformation("Пользователь зарегистрирован: {Username}", request.Username);
 
-        return GenerateAuthResponse(user);
+        return ToAuthResponse(user);
     }
 
-    /// <summary>Вход пользователя по username и password</summary>
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = _dbContext.Users
@@ -69,31 +64,33 @@ public class AuthService
             throw new UnauthorizedAccessException("Аккаунт деактивирован");
         }
 
-        // Обновление времени последнего входа
         user.LastLoginAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 
-        _logger.LogInformation("✅ Пользователь вошел: {Username}", request.Username);
+        _logger.LogInformation("Пользователь вошел: {Username}", request.Username);
 
-        return GenerateAuthResponse(user);
+        return ToAuthResponse(user);
     }
 
-    /// <summary>Генерирует JWT токен для пользователя</summary>
-    private AuthResponse GenerateAuthResponse(User user)
+    public string GenerateToken(int userId, string username, string role)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        var issuer = _configuration["Jwt:Issuer"]!;
+        var audience = _configuration["Jwt:Audience"]!;
+        var expires = DateTime.UtcNow.AddHours(24);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Role, role)
             }),
-            Expires = DateTime.UtcNow.AddHours(24),
+            Expires = expires,
+            Issuer = issuer,
+            Audience = audience,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature
@@ -101,20 +98,21 @@ public class AuthService
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        var tokenString = tokenHandler.WriteToken(token);
+        return tokenHandler.WriteToken(token);
+    }
 
+    private AuthResponse ToAuthResponse(User user)
+    {
         return new AuthResponse
         {
             UserId = user.Id,
             Username = user.Username,
             Email = user.Email,
-            Token = tokenString,
             Role = user.Role.ToString(),
             ExpiresAt = DateTime.UtcNow.AddHours(24)
         };
     }
 
-    /// <summary>Получение информации о пользователе по ID</summary>
     public async Task<UserDto?> GetUserByIdAsync(int userId)
     {
         var user = await _dbContext.Users.FindAsync(userId);

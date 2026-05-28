@@ -6,12 +6,10 @@ using SampleWiki.Data;
 using SampleWiki.Interceptors;
 using SampleWiki.Services;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==================== КОНФИГУРАЦИЯ СЕРВИСОВ ====================
-
-// Добавление контроллеров с JSON опциями
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -19,17 +17,19 @@ builder.Services.AddControllers()
     });
 
 // ==================== CORS ====================
+var frontendUrl = builder.Configuration["Frontend:Url"] ?? "http://localhost:8000";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(frontendUrl)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
-// ==================== БАЗА ДАННЫХ (Entity Framework Core) ====================
+// ==================== БАЗА ДАННЫХ ====================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -43,6 +43,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ==================== JWT АУТЕНТИФИКАЦИЯ ====================
 var jwtKey = builder.Configuration["Jwt:Key"];
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey!);
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
+var jwtAudience = builder.Configuration["Jwt:Audience"]!;
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -51,12 +53,44 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Cookies["jwt"];
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
+
+// ==================== RATE LIMITING ====================
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("AuthRateLimit", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }
+        ));
+});
 
 // ==================== DEPENDENCY INJECTION (Сервисы) ====================
 builder.Services.AddScoped<UrlValidatorService>();
@@ -119,13 +153,11 @@ using (var scope = app.Services.CreateScope())
 
 // ==================== MIDDLEWARE КОНВЕЙЕР ====================
 
-// Обработка ошибок
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-// Swagger
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -133,13 +165,10 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = string.Empty;
 });
 
-// CORS (должен быть после UseSwagger)
 app.UseCors("AllowFrontend");
 
-// Redirect HTTP на HTTPS (опционально)
-// app.UseHttpsRedirection();
+app.UseRateLimiter();
 
-// Аутентификация и авторизация
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -1,42 +1,27 @@
-/**
- * api.js - Обертка для API запросов с автоматической подстановкой токена
- */
-
-/** API базовый URL */
 const API_BASE = 'http://localhost:5000/api';
 
-/**
- * Основная функция для выполнения fetch запроса с токеном авторизации
- * @param {string} endpoint - Конечная точка API (например: '/artists')
- * @param {object} options - Дополнительные опции (method, body, etc.)
- * @returns {Promise<object>} JSON ответ от сервера
- */
 async function apiFetch(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
-    const token = getToken();
     
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers
     };
     
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-    
     const config = {
         ...options,
-        headers
+        headers,
+        credentials: 'include'
     };
     
     try {
         const response = await fetch(url, config);
         
-        // Если токен истек (401)
         if (response.status === 401) {
-            clearToken();
-            sessionStorage.removeItem('currentUser');
-            updateUIAuthState();
+            clearCurrentUser();
+            if (typeof updateUIAuthState === 'function') {
+                updateUIAuthState();
+            }
         }
         
         if (!response.ok) {
