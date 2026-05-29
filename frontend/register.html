@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SampleWiki — Регистрация</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .field-error {
+            color: #dc2626;
+            font-size: 0.8rem;
+            margin-top: -0.5rem;
+            margin-bottom: 0.75rem;
+            display: none;
+        }
+        .field-error.visible {
+            display: block;
+        }
+        .auth-field input.error-border {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+        }
+        .auth-field input.success-border {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1 style="cursor:pointer;" onclick="window.location.href='index.html'">SampleWiki</h1>
+            </div>
+            <ul class="navbar-menu" id="navMenu">
+                <li><a href="index.html">Исполнители</a></li>
+                <li><a href="search.html">Поиск</a></li>
+                <li><a href="register.html">Регистрация</a></li>
+                <li id="authNav"><a href="auth.html">Вход</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="auth-container" style="margin:0 auto;">
+            <div class="auth-form">
+                <h2>Регистрация</h2>
+                <form id="registerForm" novalidate>
+                    <div class="auth-field">
+                        <input type="text" id="usernameInput" placeholder="Имя пользователя" autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <input type="email" id="emailInput" placeholder="Email" autocomplete="email">
+                        <div id="emailError" class="field-error">Неправильный формат почты</div>
+                    </div>
+                    <div class="auth-field">
+                        <input type="password" id="passwordInput" placeholder="Пароль (мин. 8 символов, хотя бы 1 цифра)" autocomplete="new-password">
+                        <div id="passwordError" class="field-error">Пароль: минимум 8 символов и хотя бы одна цифра</div>
+                    </div>
+                    <div class="auth-field">
+                        <input type="password" id="passwordConfirmInput" placeholder="Подтвердите пароль" autocomplete="new-password">
+                        <div id="confirmError" class="field-error">Пароли не совпадают</div>
+                    </div>
+                    <div id="authError" class="auth-error" style="display:none;"></div>
+                    <button type="button" id="registerButton" class="auth-submit" onclick="handleRegister()">Зарегистрироваться</button>
+                </form>
+                <p style="text-align:center;margin-top:1rem;color:#8888a0;font-size:0.85rem;">
+                    Уже есть аккаунт? <a href="auth.html" style="color:#7c3aed;">Войти</a>
+                </p>
+            </div>
+        </div>
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="modules/utils.js"></script>
+    <script src="modules/auth.js"></script>
+    <script src="modules/render.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            updateUIAuthState();
+            if (isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('emailInput').addEventListener('blur', function() {
+                validateEmailField();
+            });
+            document.getElementById('passwordInput').addEventListener('blur', function() {
+                validatePasswordField();
+            });
+            document.getElementById('passwordInput').addEventListener('input', function() {
+                if (document.getElementById('passwordConfirmInput').value) {
+                    validateConfirmField();
+                }
+                validatePasswordField();
+            });
+            document.getElementById('passwordConfirmInput').addEventListener('blur', function() {
+                validateConfirmField();
+            });
+            document.getElementById('passwordConfirmInput').addEventListener('input', function() {
+                validateConfirmField();
+            });
+            document.getElementById('emailInput').addEventListener('input', function() {
+                if (this.value) {
+                    validateEmailField();
+                } else {
+                    clearFieldError('emailInput', 'emailError');
+                }
+            });
+        });
+
+        function clearFieldBorder(inputId) {
+            var el = document.getElementById(inputId);
+            el.classList.remove('error-border', 'success-border');
+        }
+
+        function clearFieldError(inputId, errorId) {
+            clearFieldBorder(inputId);
+            document.getElementById(errorId).classList.remove('visible');
+        }
+
+        function showFieldError(inputId, errorId) {
+            var el = document.getElementById(inputId);
+            el.classList.remove('success-border');
+            el.classList.add('error-border');
+            document.getElementById(errorId).classList.add('visible');
+        }
+
+        function showFieldSuccess(inputId, errorId) {
+            var el = document.getElementById(inputId);
+            el.classList.remove('error-border');
+            el.classList.add('success-border');
+            document.getElementById(errorId).classList.remove('visible');
+        }
+
+        function validateEmailField() {
+            var email = document.getElementById('emailInput').value.trim();
+            if (!email) {
+                clearFieldError('emailInput', 'emailError');
+                return false;
+            }
+            if (!isValidEmail(email)) {
+                showFieldError('emailInput', 'emailError');
+                return false;
+            }
+            showFieldSuccess('emailInput', 'emailError');
+            return true;
+        }
+
+        function validatePasswordField() {
+            var pwd = document.getElementById('passwordInput').value;
+            if (!pwd) {
+                clearFieldError('passwordInput', 'passwordError');
+                return false;
+            }
+            if (pwd.length < 8 || !/\d/.test(pwd)) {
+                showFieldError('passwordInput', 'passwordError');
+                return false;
+            }
+            showFieldSuccess('passwordInput', 'passwordError');
+            return true;
+        }
+
+        function validateConfirmField() {
+            var pwd = document.getElementById('passwordInput').value;
+            var confirm = document.getElementById('passwordConfirmInput').value;
+            if (!confirm) {
+                clearFieldError('passwordConfirmInput', 'confirmError');
+                return false;
+            }
+            if (pwd !== confirm) {
+                showFieldError('passwordConfirmInput', 'confirmError');
+                return false;
+            }
+            showFieldSuccess('passwordConfirmInput', 'confirmError');
+            return true;
+        }
+
+        function hideAllFieldErrors() {
+            ['emailError', 'passwordError', 'confirmError'].forEach(function(id) {
+                document.getElementById(id).classList.remove('visible');
+            });
+            ['emailInput', 'passwordInput', 'passwordConfirmInput'].forEach(function(id) {
+                document.getElementById(id).classList.remove('error-border', 'success-border');
+            });
+        }
+
+        async function handleRegister() {
+            hideAllFieldErrors();
+
+            var username = document.getElementById('usernameInput').value.trim();
+            var email = document.getElementById('emailInput').value.trim();
+            var password = document.getElementById('passwordInput').value;
+            var pwdConfirm = document.getElementById('passwordConfirmInput').value;
+
+            if (!username || !email || !password) {
+                document.getElementById('authError').textContent = 'Заполните все поля';
+                document.getElementById('authError').style.display = 'block';
+                return;
+            }
+
+            var emailValid = validateEmailField();
+            var pwdValid = validatePasswordField();
+            var confirmValid = validateConfirmField();
+
+            if (!emailValid) {
+                document.getElementById('authError').textContent = 'Неправильный формат почты';
+                document.getElementById('authError').style.display = 'block';
+                return;
+            }
+            if (!pwdValid) {
+                document.getElementById('authError').textContent = 'Пароль: минимум 8 символов и хотя бы одна цифра';
+                document.getElementById('authError').style.display = 'block';
+                return;
+            }
+            if (!confirmValid) {
+                document.getElementById('authError').textContent = 'Пароли не совпадают';
+                document.getElementById('authError').style.display = 'block';
+                return;
+            }
+
+            try {
+                var btn = document.getElementById('registerButton');
+                btn.disabled = true;
+                btn.textContent = 'Регистрирую…';
+
+                var response = await register(username, email, password);
+                saveCurrentUser({
+                    id: response.userId,
+                    username: response.username,
+                    email: response.email,
+                    role: response.role
+                });
+                updateUIAuthState();
+                showToast('Добро пожаловать, ' + response.username + '!', 'success');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Register error:', error);
+                var errorEl = document.getElementById('authError');
+                errorEl.textContent = error.message || 'Ошибка регистрации';
+                errorEl.style.display = 'block';
+                var btn = document.getElementById('registerButton');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Зарегистрироваться';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

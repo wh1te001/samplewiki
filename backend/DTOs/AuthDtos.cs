@@ -18,8 +18,8 @@ public class RegisterRequest
     [Required(ErrorMessage = "Пароль обязателен")]
     [MinLength(8, ErrorMessage = "Пароль должен быть минимум 8 символов")]
     [MaxLength(128, ErrorMessage = "Пароль слишком длинный")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$",
-        ErrorMessage = "Пароль должен содержать заглавную букву, строчную букву, цифру и спецсимвол")]
+    [RegularExpression(@"^(?=.*\d).{8,}$",
+        ErrorMessage = "Пароль должен содержать минимум 8 символов и хотя бы одну цифру")]
     public required string Password { get; set; }
 }
 

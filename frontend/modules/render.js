@@ -3,20 +3,6 @@ function slugify(text) {
     return text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/^-+|-+$/g, '') || 'unknown';
 }
 
-function artistUrl(artist) {
-    return slugify(artist ? artist.name : '');
-}
-
-function trackUrl(track) {
-    if (!track) return '';
-    return (track.artist ? artistUrl(track.artist) : 'unknown') + '/' + slugify(track.title);
-}
-
-function sampleUrl(sample) {
-    if (!sample) return '';
-    return 'sample/' + sample.id + '/' + slugify(sample.sampledTrackTitle || '');
-}
-
 function embedUrlFromUrl(url) {
     if (!url) return null;
     // YouTube
@@ -94,7 +80,7 @@ async function renderArtists(artists) {
         return;
     }
     artistsList.innerHTML = artists.map(artist => `
-        <div class="card" onclick="navigateTo('${artistUrl(artist)}')">
+        <div class="card" onclick="window.location.href='artist.html?id=${artist.id}'">
             <h3>${escapeHtml(artist.name)}</h3>
             <p>${artist.description ? truncateText(artist.description, 80) : 'Нет описания'}</p>
             <p style="font-size: 0.8rem; color: #8888a0;">
@@ -109,7 +95,7 @@ function renderArtistDetail(artist) {
     const detail = document.getElementById('artistDetail');
     const albumsHtml = artist.albums && artist.albums.length > 0
         ? `<div class="detail-section"><h3>Альбомы (${artist.albums.length})</h3><div class="grid">${artist.albums.map(album => `
-            <div class="card">
+            <div class="card" onclick="window.location.href='album.html?id=${album.id}'">
                 <h4>${escapeHtml(album.title)}</h4>
                 <p>${album.releaseYear ? `📅 ${album.releaseYear}` : 'Год не указан'}</p>
                 <p style="font-size: 0.85rem; color: #8888a0;">${album.tracks ? album.tracks.length : 0} треков</p>
@@ -132,7 +118,7 @@ function renderArtistDetail(artist) {
                     <h3>Треки (${artist.tracks.length})</h3>
                     <div class="grid">
                         ${artist.tracks.map(track => `
-                            <div class="card" onclick="navigateTo('${slugify(artist.name)}/${slugify(track.title)}')">
+                            <div class="card" onclick="window.location.href='track.html?id=${track.id}'">
                                 <h4>${escapeHtml(track.title)}</h4>
                                 <p>⏱️ ${formatTime(track.durationSeconds)}</p>
                                 <p style="font-size: 0.85rem; color: #8888a0;">${track.genre || 'Жанр не указан'}</p>
@@ -152,39 +138,20 @@ function renderSearchResults(results) {
     let html = '';
     if (results.artists?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Исполнители</h3>`;
-        html += results.artists.map(a => `<div class="card" onclick="navigateTo('${slugify(a.name)}')"><h4>${escapeHtml(a.name)}</h4><p style="font-size:0.85rem;color:#8888a0;">Исполнитель</p></div>`).join('');
+        html += results.artists.map(a => `<div class="card" onclick="window.location.href='artist.html?id=${a.id}'"><h4>${escapeHtml(a.name)}</h4><p style="font-size:0.85rem;color:#8888a0;">Исполнитель</p></div>`).join('');
     }
     if (results.tracks?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Треки</h3>`;
-        html += results.tracks.map(t => `<div class="card" onclick="navigateTo('track/${t.id}')"><h4>${escapeHtml(t.title)}</h4><p>⏱️ ${formatTime(t.durationSeconds)}</p><p style="font-size:0.85rem;color:#8888a0;">${t.genre || 'Жанр не указан'}</p></div>`).join('');
+        html += results.tracks.map(t => `<div class="card" onclick="window.location.href='track.html?id=${t.id}'"><h4>${escapeHtml(t.title)}</h4><p>⏱️ ${formatTime(t.durationSeconds)}</p><p style="font-size:0.85rem;color:#8888a0;">${t.genre || 'Жанр не указан'}</p></div>`).join('');
     }
     if (results.samples?.length > 0) {
         html += `<h3 style="grid-column:1/-1;color:#7c3aed;">Сэмплы</h3>`;
-        html += results.samples.map(s => `<div class="card" onclick="navigateTo('${sampleUrl(s)}')"><h4>${escapeHtml(s.sampledTrackTitle || 'Сэмпл')}</h4><p style="font-size:0.85rem;color:#8888a0;">${escapeHtml(s.sampledTrackArtistName || '')}</p><p style="font-size:0.85rem;">Тип: ${s.type}</p></div>`).join('');
+        html += results.samples.map(s => `<div class="card" onclick="window.location.href='sample.html?id=${s.id}'"><h4>${escapeHtml(s.sampledTrackTitle || 'Сэмпл')}</h4><p style="font-size:0.85rem;color:#8888a0;">${escapeHtml(s.sampledTrackArtistName || '')}</p><p style="font-size:0.85rem;">Тип: ${s.type}</p></div>`).join('');
     }
     container.innerHTML = html;
 }
 
-function renderRevisions(revisions) {
-    const history = document.getElementById('historyList');
-    if (!revisions || revisions.length === 0) {
-        history.innerHTML = '<p class="empty-state">История пуста</p>';
-        return;
-    }
-    history.innerHTML = revisions.map(r => `
-        <div class="history-item">
-            <div class="history-item-title">
-                ${changeTypeEmoji(r.changeType)} ${escapeHtml(r.entityName)}
-                ${r.changeType === 'Created' ? 'создана' : r.changeType === 'Updated' ? 'обновлена' : 'удалена'}
-            </div>
-            <div class="history-item-date">${formatDate(r.createdAt)}</div>
-            <div class="history-item-changes">${escapeHtml(r.description)}</div>
-        </div>`).join('');
-}
 
-function changeTypeEmoji(type) {
-    switch (type) { case 'Created': return '✅'; case 'Updated': return '🔄'; case 'Deleted': return '❌'; default: return '📝'; }
-}
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -207,7 +174,7 @@ function renderTrackDetail(track, samples) {
             <p style="color: #8888a0; margin-bottom: 1rem;">Нажми на сэмпл, чтобы увидеть детали</p>
             <div class="samples-list">
                 ${samples.map(s => `
-                    <div class="sample-card" onclick="navigateTo('${sampleUrl(s)}')">
+                    <div class="sample-card" onclick="window.location.href='sample.html?id=${s.id}'">
                         <h4>${escapeHtml(s.sampledTrackTitle)} ${getSampleTypeBadge(s.type)}</h4>
                         <p style="font-size:0.85rem;color:#8888a0;margin-bottom:0.5rem;">${escapeHtml(s.sampledTrackArtistName || '')}</p>
                         ${s.startTimeSeconds != null
@@ -244,6 +211,33 @@ function renderTrackDetail(track, samples) {
         </div>`;
 }
 
+function renderAlbumDetail(album) {
+    const detail = document.getElementById('albumDetail');
+    detail.innerHTML = `
+        <div class="track-detail-layout">
+            <div class="track-info-card">
+                <div class="detail-header">
+                    <h2>${escapeHtml(album.title)}</h2>
+                    <p class="detail-meta">${album.releaseYear ? '📅 ' + album.releaseYear : ''} · ${album.artist ? escapeHtml(album.artist.name) : ''}</p>
+                </div>
+                ${album.imageUrl ? `<img src="${escapeHtml(album.imageUrl)}" alt="${escapeHtml(album.title)}" style="max-width:300px;border-radius:10px;margin-bottom:1rem;">` : ''}
+                ${album.description ? `<div class="detail-body"><p>${escapeHtml(album.description)}</p></div>` : ''}
+            </div>
+            ${album.tracks && album.tracks.length > 0 ? `
+                <div class="detail-section">
+                    <h3>Треки (${album.tracks.length})</h3>
+                    <div class="grid">
+                        ${album.tracks.map(track => `
+                            <div class="card" onclick="window.location.href='track.html?id=${track.id}'">
+                                <h4>${escapeHtml(track.title)}</h4>
+                                <p>⏱️ ${formatTime(track.durationSeconds)}</p>
+                                <p style="font-size:0.85rem;color:#8888a0;">${track.genre || ''}</p>
+                            </div>`).join('')}
+                    </div>
+                </div>` : ''}
+        </div>`;
+}
+
 function renderSampleDetail(samplerTrack, sampledTrack, sample) {
     const detail = document.getElementById('sampleDetail');
 
@@ -256,12 +250,12 @@ function renderSampleDetail(samplerTrack, sampledTrack, sample) {
                         <h3 class="sample-video-label">В ЭТОМ ТРЕКЕ</h3>
                         <div class="embed-16-9" id="track-embed-container">${embedHtml(samplerTrack.resourceUrl, samplerTrack.title)}</div>
                         <div style="margin-top:0.75rem;">
-                            <p style="font-weight:600;"><a style="color:#7c3aed;text-decoration:none;cursor:pointer;" onclick="navigateTo('${slugify(samplerTrack.artistName || '')}/${slugify(samplerTrack.title)}')">${escapeHtml(samplerTrack.title)}</a></p>
+                            <p style="font-weight:600;"><a style="color:#7c3aed;text-decoration:none;cursor:pointer;" href="track.html?id=${samplerTrack.id}">${escapeHtml(samplerTrack.title)}</a></p>
                             <p style="color:#8888a0;font-size:0.85rem;">${escapeHtml(samplerTrack.artistName || 'Неизвестен')}</p>
                             ${sample.startTimeSeconds != null
                                 ? `<span class="sample-timecode-big" data-url="${escapeHtml(samplerTrack.resourceUrl)}" data-title="${escapeHtml(samplerTrack.title)}" data-seconds="${sample.startTimeSeconds}" onclick="jumpTrackEmbed(this)">⏱ ${formatTime(sample.startTimeSeconds)}</span>`
                                 : ''}
-                            <div style="margin-top:0.5rem;"><button onclick="navigateTo('${slugify(samplerTrack.artistName || '')}/${slugify(samplerTrack.title)}')" class="listen-btn">К треку →</button></div>
+                            <div style="margin-top:0.5rem;"><a href="track.html?id=${samplerTrack.id}" class="listen-btn">К треку →</a></div>
                         </div>
                     </div>
                     <div class="sample-video-col">
@@ -270,10 +264,10 @@ function renderSampleDetail(samplerTrack, sampledTrack, sample) {
                             ? `<div class="embed-16-9">${embedHtml(sampledTrack.resourceUrl, sampledTrack.title)}</div>`
                             : '<div class="embed-16-9" style="background:#f8f6fc;display:flex;align-items:center;justify-content:center;color:#8888a0;">Видео не добавлено</div>'}
                         <div style="margin-top:0.75rem;">
-                            <p style="font-weight:600;"><a style="color:#7c3aed;text-decoration:none;cursor:pointer;" onclick="navigateTo('${slugify(sampledTrack.artistName || '')}/${slugify(sampledTrack.title)}')">${escapeHtml(sampledTrack.title)}</a> ${getSampleTypeBadge(sample.type)}</p>
+                            <p style="font-weight:600;"><a style="color:#7c3aed;text-decoration:none;cursor:pointer;" href="track.html?id=${sampledTrack.id}">${escapeHtml(sampledTrack.title)}</a> ${getSampleTypeBadge(sample.type)}</p>
                             <p style="color:#8888a0;font-size:0.85rem;">${escapeHtml(sampledTrack.artistName || 'Неизвестен')}</p>
                             ${sample.description ? `<p style="color:#8888a0;font-size:0.85rem;">${truncateText(sample.description, 120)}</p>` : ''}
-                            ${sampledTrack.resourceUrl ? `<div style="margin-top:0.5rem;"><button onclick="navigateTo('${slugify(sampledTrack.artistName || '')}/${slugify(sampledTrack.title)}')" class="listen-btn">К треку →</button></div>` : ''}
+                            ${sampledTrack.resourceUrl ? `<div style="margin-top:0.5rem;"><a href="track.html?id=${sampledTrack.id}" class="listen-btn">К треку →</a></div>` : ''}
                         </div>
                     </div>
                 </div>

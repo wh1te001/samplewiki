@@ -153,6 +153,8 @@ using (var scope = app.Services.CreateScope())
 
 // ==================== MIDDLEWARE КОНВЕЙЕР ====================
 
+app.UseCors("AllowFrontend");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -164,8 +166,6 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleWiki API v1");
     options.RoutePrefix = string.Empty;
 });
-
-app.UseCors("AllowFrontend");
 
 app.UseRateLimiter();
 

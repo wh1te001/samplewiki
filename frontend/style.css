@@ -179,16 +179,6 @@ input:focus, textarea:focus, select:focus {
     min-height: calc(100vh - 70px);
 }
 
-.auth-container {
-    max-width: 400px;
-    width: 100%;
-}
-
-.auth-overlay {
-    position: fixed; inset: 0; z-index: 998;
-    background: rgba(0,0,0,0.4);
-}
-
 .auth-form {
     position: relative;
     background: #ffffff;
@@ -243,19 +233,7 @@ input:focus, textarea:focus, select:focus {
 }
 .auth-toggle:hover { background: #f5f3ff; }
 
-.auth-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 70px);
-    position: fixed; inset: 0; z-index: 999;
-}
 
-.auth-container {
-    max-width: 380px;
-    width: 100%;
-    position: relative; z-index: 999;
-}
 
 .search-container {
     display: flex;
@@ -276,39 +254,6 @@ input:focus, textarea:focus, select:focus {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1.5rem;
-}
-
-.history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.history-item {
-    background: #ffffff;
-    border-left: 4px solid #7c3aed;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #e8e0f0;
-}
-
-.history-item-title {
-    color: #7c3aed;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.history-item-date {
-    font-size: 0.85rem;
-    color: #8888a0;
-}
-
-.history-item-changes {
-    font-size: 0.9rem;
-    color: #6b6b80;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #e8e0f0;
 }
 
 .toast {

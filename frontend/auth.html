@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SampleWiki — Вход</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1 style="cursor:pointer;" onclick="window.location.href='index.html'">SampleWiki</h1>
+            </div>
+            <ul class="navbar-menu" id="navMenu">
+                <li><a href="index.html">Исполнители</a></li>
+                <li><a href="search.html">Поиск</a></li>
+                <li id="authNav"><a href="auth.html">Вход</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="auth-container" style="margin:0 auto;">
+            <div class="auth-form">
+                <h2>Вход</h2>
+                <form id="loginForm" novalidate>
+                    <div class="auth-field">
+                        <input type="text" id="usernameInput" placeholder="Имя пользователя" required autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <input type="password" id="passwordInput" placeholder="Пароль" required autocomplete="current-password">
+                    </div>
+                    <div id="authError" class="auth-error" style="display:none;"></div>
+                    <button type="button" id="loginButton" class="auth-submit" onclick="handleLogin()">Вход</button>
+                </form>
+                <p style="text-align:center;margin-top:1rem;color:#8888a0;font-size:0.85rem;">
+                    Нет аккаунта? <a href="register.html" style="color:#7c3aed;">Зарегистрироваться</a>
+                </p>
+            </div>
+        </div>
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="modules/utils.js"></script>
+    <script src="modules/auth.js"></script>
+    <script src="modules/render.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            updateUIAuthState();
+            if (isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+        });
+
+        async function handleLogin() {
+            const errorEl = document.getElementById('authError');
+            errorEl.style.display = 'none';
+
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+
+            if (!username || !password) {
+                errorEl.textContent = 'Заполните все поля';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const btn = document.getElementById('loginButton');
+                btn.disabled = true;
+                btn.textContent = 'Вхожу…';
+
+                const response = await login(username, password);
+                saveCurrentUser({
+                    id: response.userId,
+                    username: response.username,
+                    email: response.email,
+                    role: response.role
+                });
+                updateUIAuthState();
+                showToast('Добро пожаловать, ' + response.username + '!', 'success');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Login error:', error);
+                if (errorEl) {
+                    errorEl.textContent = error.message || 'Ошибка входа';
+                    errorEl.style.display = 'block';
+                }
+                const btn = document.getElementById('loginButton');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Вход';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

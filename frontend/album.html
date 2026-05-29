@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SampleWiki — Каталог сэмплов</title>
+    <title>SampleWiki — Альбом</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,17 +15,14 @@
             <ul class="navbar-menu" id="navMenu">
                 <li><a href="index.html">Исполнители</a></li>
                 <li><a href="search.html">Поиск</a></li>
-                <li><a href="register.html">Регистрация</a></li>
                 <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="container main-content">
-        <h2>Исполнители</h2>
-        <div id="artistsList" class="grid">
-            <p>Загрузка...</p>
-        </div>
+        <a href="javascript:history.back()" class="btn-back">← Назад</a>
+        <div id="albumDetail"></div>
         <div id="toast" class="toast"></div>
     </div>
 
@@ -37,11 +34,17 @@
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
             updateUIAuthState();
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) {
+                document.getElementById('albumDetail').innerHTML = '<p class="empty-state">ID альбома не указан</p>';
+                return;
+            }
             try {
-                const artists = await getArtists();
-                renderArtists(artists);
+                const album = await getAlbumById(parseInt(id));
+                renderAlbumDetail(album);
             } catch (e) {
-                showToast('Ошибка загрузки: ' + e.message, 'error');
+                document.getElementById('albumDetail').innerHTML = '<p class="empty-state">Ошибка загрузки: ' + e.message + '</p>';
             }
         });
     </script>

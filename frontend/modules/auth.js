@@ -1,6 +1,11 @@
 const API_HOST = 'http://localhost:5000/api';
 
+function toggleAuth() {
+    window.location.href = 'auth.html';
+}
+
 function authFetch(endpoint, body) {
+    console.log(`[authFetch] POST ${API_HOST}${endpoint}`);
     return fetch(`${API_HOST}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -16,8 +21,8 @@ async function register(username, email, password) {
     if (!isValidEmail(email)) {
         throw new Error('Некорректный email');
     }
-    if (password.length < 8) {
-        throw new Error('Пароль должен быть минимум 8 символов');
+    if (password.length < 8 || !/\d/.test(password)) {
+        throw new Error('Пароль: минимум 8 символов и хотя бы одна цифра');
     }
     const response = await authFetch('/auth/register', { username, email, password });
     if (!response.ok) {
@@ -50,10 +55,8 @@ async function logout() {
     }
     clearCurrentUser();
     updateUIAuthState();
-    const authSection = document.getElementById('authSection');
-    if (authSection) authSection.style.display = 'none';
-    showPage('artists');
     showToast('Вы вышли из системы', 'info');
+    window.location.href = 'index.html';
 }
 
 async function checkAuth() {
@@ -89,42 +92,3 @@ function updateUIAuthState() {
     }
 }
 
-async function handleAuthSubmit(username, email, password, isRegister) {
-    const btn = document.getElementById('authButton');
-    const errorEl = document.getElementById('authError');
-    errorEl.style.display = 'none';
-
-    try {
-        btn.disabled = true;
-        btn.textContent = isRegister ? 'Регистрирую…' : 'Вхожу…';
-
-        let response;
-        if (isRegister) {
-            response = await register(username, email, password);
-        } else {
-            response = await login(username, password);
-        }
-
-        saveCurrentUser({
-            id: response.userId,
-            username: response.username,
-            email: response.email,
-            role: response.role
-        });
-
-        updateUIAuthState();
-        showToast(`Добро пожаловать, ${response.username}!`, 'success');
-
-        const authSection = document.getElementById('authSection');
-        if (authSection) authSection.style.display = 'none';
-        showPage('artists');
-        return true;
-    } catch (error) {
-        errorEl.textContent = error.message;
-        errorEl.style.display = 'block';
-        return false;
-    } finally {
-        btn.disabled = false;
-        btn.textContent = isRegister ? 'Зарегистрироваться' : 'Вход';
-    }
-}

@@ -89,6 +89,15 @@ async function getTrackById(id) {
 }
 
 /**
+ * Получить альбом по ID
+ * @param {number} id - ID альбома
+ * @returns {Promise<object>} Информация об альбоме с треками
+ */
+async function getAlbumById(id) {
+    return apiFetch(`/albums/${id}`);
+}
+
+/**
  * Получить треки альбома
  * @param {number} albumId - ID альбома
  * @returns {Promise<Array>} Список треков в альбоме
