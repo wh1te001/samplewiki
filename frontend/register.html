@@ -29,15 +29,23 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-brand">
-                <h1 style="cursor:pointer;" onclick="window.location.href='index.html'">SampleWiki</h1>
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
+                </div>
+                <ul class="navbar-menu">
+                    <li><a href="index.html">Исполнители</a></li>
+                </ul>
             </div>
-            <ul class="navbar-menu" id="navMenu">
-                <li><a href="index.html">Исполнители</a></li>
-                <li><a href="search.html">Поиск</a></li>
-                <li><a href="register.html">Регистрация</a></li>
-                <li id="authNav"><a href="auth.html">Вход</a></li>
-            </ul>
+            <div class="navbar-right">
+                <div class="navbar-search">
+                    <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
+                </div>
+                <ul class="navbar-menu">
+                    <li id="registerNav"><a href="register.html">Регистрация</a></li>
+                    <li id="authNav"><a href="auth.html">Вход</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -64,8 +72,8 @@
                     <div id="authError" class="auth-error" style="display:none;"></div>
                     <button type="button" id="registerButton" class="auth-submit" onclick="handleRegister()">Зарегистрироваться</button>
                 </form>
-                <p style="text-align:center;margin-top:1rem;color:#8888a0;font-size:0.85rem;">
-                    Уже есть аккаунт? <a href="auth.html" style="color:#7c3aed;">Войти</a>
+                <p style="text-align:center;margin-top:1rem;color:#888;font-size:0.85rem;">
+                    Уже есть аккаунт? <a href="auth.html" style="color:#cc0000;">Войти</a>
                 </p>
             </div>
         </div>

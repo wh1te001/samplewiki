@@ -83,12 +83,15 @@ async function checkAuth() {
 
 function updateUIAuthState() {
     const authNav = document.getElementById('authNav');
+    const registerNav = document.getElementById('registerNav');
     const user = getCurrentUser();
     if (isAuthenticated() && user) {
         const roleLabel = user.role === 'Admin' ? ' ⚡' : '';
         authNav.innerHTML = `<a href="javascript:void(0)" onclick="logout()">${user.username.replace(/[<>&"']/g, function(c){return '&#'+c.charCodeAt(0)+';'})}${roleLabel} · Выход</a>`;
+        if (registerNav) registerNav.style.display = 'none';
     } else {
         authNav.innerHTML = '<a href="javascript:void(0)" onclick="toggleAuth()">Вход</a>';
+        if (registerNav) registerNav.style.display = '';
     }
 }
 

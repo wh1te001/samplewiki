@@ -9,24 +9,56 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-brand">
-                <h1 style="cursor:pointer;" onclick="window.location.href='index.html'">SampleWiki</h1>
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
+                </div>
+                <ul class="navbar-menu">
+                    <li><a href="index.html">Исполнители</a></li>
+                </ul>
             </div>
-            <ul class="navbar-menu" id="navMenu">
-                <li><a href="index.html">Исполнители</a></li>
-                <li><a href="search.html">Поиск</a></li>
-                <li><a href="register.html">Регистрация</a></li>
-                <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
-            </ul>
+            <div class="navbar-right">
+                <div class="navbar-search">
+                    <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
+                </div>
+                <ul class="navbar-menu">
+                    <li id="registerNav"><a href="register.html">Регистрация</a></li>
+                    <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container main-content">
-        <h2>Исполнители</h2>
-        <div id="artistsList" class="grid">
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+            <h1 style="margin:0;">Исполнители</h1>
+            <button class="btn-primary" onclick="openArtistCreateModal()" id="addArtistBtn" style="display:none;">+ Добавить артиста</button>
+        </div>
+        <div id="artistsList">
             <p>Загрузка...</p>
         </div>
         <div id="toast" class="toast"></div>
+    </div>
+
+    <!-- Artist Create Modal -->
+    <div id="artistModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('artistModal')">&times;</button>
+            <h2 id="artistModalTitle">Добавить артиста</h2>
+            <form id="artistForm" novalidate>
+                <div class="auth-field">
+                    <input type="text" id="artistNameInput" placeholder="Название артиста *" required>
+                </div>
+                <div class="auth-field">
+                    <textarea id="artistDescriptionInput" placeholder="Описание"></textarea>
+                </div>
+                <div class="auth-field">
+                    <input type="url" id="artistWikiLinkInput" placeholder="Ссылка на Wikipedia">
+                </div>
+                <div id="artistFormError" class="auth-error" style="display:none;"></div>
+                <button type="button" id="artistFormSubmit" class="auth-submit" onclick="handleArtistSubmit()">Сохранить</button>
+            </form>
+        </div>
     </div>
 
     <script src="modules/utils.js"></script>
@@ -34,9 +66,15 @@
     <script src="modules/api.js"></script>
     <script src="modules/render.js"></script>
     <script>
+        let editingArtistId = null;
+
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
             updateUIAuthState();
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById('addArtistBtn').style.display = 'inline-block';
+            }
             try {
                 const artists = await getArtists();
                 renderArtists(artists);
@@ -44,6 +82,54 @@
                 showToast('Ошибка загрузки: ' + e.message, 'error');
             }
         });
+
+        function openArtistCreateModal() {
+            editingArtistId = null;
+            document.getElementById('artistModalTitle').textContent = 'Добавить артиста';
+            document.getElementById('artistNameInput').value = '';
+            document.getElementById('artistDescriptionInput').value = '';
+            document.getElementById('artistWikiLinkInput').value = '';
+            document.getElementById('artistFormError').style.display = 'none';
+            document.getElementById('artistFormSubmit').disabled = false;
+            document.getElementById('artistFormSubmit').textContent = 'Сохранить';
+            openModal('artistModal');
+        }
+
+        async function handleArtistSubmit() {
+            const name = document.getElementById('artistNameInput').value.trim();
+            const description = document.getElementById('artistDescriptionInput').value.trim();
+            const wikiLink = document.getElementById('artistWikiLinkInput').value.trim();
+            const errorEl = document.getElementById('artistFormError');
+            const submitBtn = document.getElementById('artistFormSubmit');
+
+            if (!name) {
+                errorEl.textContent = 'Название артиста обязательно';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Сохранение...';
+            errorEl.style.display = 'none';
+
+            try {
+                if (editingArtistId) {
+                    await updateArtist(editingArtistId, { name, description, wikiLink });
+                    showToast('Артист обновлён', 'success');
+                } else {
+                    await createArtist(name, description, wikiLink);
+                    showToast('Артист создан', 'success');
+                }
+                closeModal('artistModal');
+                const artists = await getArtists();
+                renderArtists(artists);
+            } catch (e) {
+                errorEl.textContent = e.message;
+                errorEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = editingArtistId ? 'Обновить' : 'Сохранить';
+            }
+        }
     </script>
 </body>
 </html>

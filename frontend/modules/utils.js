@@ -64,6 +64,13 @@ function isAuthenticated() {
  * @param {number} maxLength - Максимальная длина
  * @returns {string} Усеченный текст
  */
+function navbarSearch() {
+    const q = document.getElementById('navbarSearchInput')?.value.trim();
+    if (q) {
+        window.location.href = 'search.html?q=' + encodeURIComponent(q);
+    }
+}
+
 function truncateText(text, maxLength = 100) {
     if (!text) return '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;

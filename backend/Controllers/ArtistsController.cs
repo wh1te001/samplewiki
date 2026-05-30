@@ -34,7 +34,8 @@ public class ArtistsController : ControllerBase
                     Description = a.Description,
                     WikiLink = a.WikiLink,
                     CreatedAt = a.CreatedAt,
-                    UpdatedAt = a.UpdatedAt
+                    UpdatedAt = a.UpdatedAt,
+                    TrackCount = a.Tracks.Count
                 })
                 .ToListAsync();
 

@@ -9,19 +9,28 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-brand">
-                <h1 style="cursor:pointer;" onclick="window.location.href='index.html'">SampleWiki</h1>
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
+                </div>
+                <ul class="navbar-menu">
+                    <li><a href="index.html">Исполнители</a></li>
+                </ul>
             </div>
-            <ul class="navbar-menu" id="navMenu">
-                <li><a href="index.html">Исполнители</a></li>
-                <li><a href="search.html">Поиск</a></li>
-                <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
-            </ul>
+            <div class="navbar-right">
+                <div class="navbar-search">
+                    <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
+                </div>
+                <ul class="navbar-menu">
+                    <li id="registerNav"><a href="register.html">Регистрация</a></li>
+                    <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container main-content">
-        <h2>Поиск</h2>
+        <div class="page-header"><h1>Поиск</h1></div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Поиск исполнителей, треков, сэмплов..." onkeyup="performSearch()">
             <button onclick="performSearch()" class="btn-primary">Поиск</button>
@@ -38,6 +47,12 @@
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
             updateUIAuthState();
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q');
+            if (q) {
+                document.getElementById('searchInput').value = q;
+                await performSearch();
+            }
         });
 
         const performSearch = debounce(async function() {

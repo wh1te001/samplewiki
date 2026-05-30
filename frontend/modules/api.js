@@ -36,6 +36,16 @@ async function apiFetch(endpoint, options = {}) {
     }
 }
 
+// ==================== ALBUMS ====================
+
+/**
+ * Получить все альбомы
+ * @returns {Promise<Array>} Список альбомов
+ */
+async function getAllAlbums() {
+    return apiFetch('/albums');
+}
+
 // ==================== ARTISTS ====================
 
 /**
@@ -67,6 +77,28 @@ async function createArtist(name, description, wikiLink) {
         method: 'POST',
         body: JSON.stringify({ name, description, wikiLink })
     });
+}
+
+/**
+ * Обновить исполнителя
+ * @param {number} id - ID исполнителя
+ * @param {object} data - Данные для обновления { name, description, wikiLink }
+ * @returns {Promise<object>} Обновленный исполнитель
+ */
+async function updateArtist(id, data) {
+    return apiFetch(`/artists/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+}
+
+/**
+ * Удалить исполнителя
+ * @param {number} id - ID исполнителя
+ * @returns {Promise<object>} Результат удаления
+ */
+async function deleteArtist(id) {
+    return apiFetch(`/artists/${id}`, { method: 'DELETE' });
 }
 
 // ==================== TRACKS ====================
@@ -131,6 +163,15 @@ async function updateTrack(id, trackData) {
     });
 }
 
+/**
+ * Удалить трек
+ * @param {number} id - ID трека
+ * @returns {Promise<object>} Результат удаления
+ */
+async function deleteTrack(id) {
+    return apiFetch(`/tracks/${id}`, { method: 'DELETE' });
+}
+
 // ==================== SAMPLES ====================
 
 /**
@@ -182,6 +223,15 @@ async function updateSample(id, sampleData) {
         method: 'PUT',
         body: JSON.stringify(sampleData)
     });
+}
+
+/**
+ * Удалить сэмпл
+ * @param {number} id - ID сэмпла
+ * @returns {Promise<object>} Результат удаления
+ */
+async function deleteSample(id) {
+    return apiFetch(`/samples/${id}`, { method: 'DELETE' });
 }
 
 // ==================== REVISIONS ====================

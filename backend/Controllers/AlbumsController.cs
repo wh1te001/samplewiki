@@ -18,6 +18,37 @@ public class AlbumsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>Получить все альбомы (базовая информация)</summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAllAlbums()
+    {
+        try
+        {
+            var albums = await _dbContext.Albums
+                .Include(a => a.Artist)
+                .OrderBy(a => a.Title)
+                .Select(a => new AlbumDto
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    ReleaseYear = a.ReleaseYear,
+                    Description = a.Description,
+                    ArtistId = a.ArtistId,
+                    ImageUrl = a.Artworks.Select(aw => aw.ImageUrl).FirstOrDefault(),
+                    CreatedAt = a.CreatedAt,
+                    UpdatedAt = a.UpdatedAt,
+                })
+                .ToListAsync();
+
+            return Ok(albums);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Ошибка при получении альбомов: {Message}", ex.Message);
+            return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+        }
+    }
+
     /// <summary>Получить альбом по ID с треками, исполнителем и обложками</summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAlbumById(int id)

@@ -9,21 +9,91 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <div class="navbar-brand">
-                <h1 style="cursor:pointer;" onclick="window.location.href='index.html'">SampleWiki</h1>
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
+                </div>
+                <ul class="navbar-menu">
+                    <li><a href="index.html">Исполнители</a></li>
+                </ul>
             </div>
-            <ul class="navbar-menu" id="navMenu">
-                <li><a href="index.html">Исполнители</a></li>
-                <li><a href="search.html">Поиск</a></li>
-                <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
-            </ul>
+            <div class="navbar-right">
+                <div class="navbar-search">
+                    <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
+                </div>
+                <ul class="navbar-menu">
+                    <li id="registerNav"><a href="register.html">Регистрация</a></li>
+                    <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container main-content">
         <a href="javascript:history.back()" class="btn-back">← Назад</a>
+        <div id="trackHeader" class="header-actions"></div>
         <div id="trackDetail"></div>
         <div id="toast" class="toast"></div>
+    </div>
+
+    <!-- Track Edit Modal -->
+    <div id="trackEditModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('trackEditModal')">&times;</button>
+            <h2>Редактировать трек</h2>
+            <form id="trackEditForm" novalidate>
+                <div class="auth-field">
+                    <input type="text" id="trackEditTitleInput" placeholder="Название трека">
+                </div>
+                <div class="auth-field">
+                    <input type="number" id="trackEditDurationInput" placeholder="Длительность (сек)">
+                </div>
+                <div class="auth-field">
+                    <input type="number" id="trackEditNumberInput" placeholder="Номер трека">
+                </div>
+                <div class="auth-field">
+                    <input type="text" id="trackEditGenreInput" placeholder="Жанр">
+                </div>
+                <div class="auth-field">
+                    <input type="url" id="trackEditUrlInput" placeholder="Ссылка (YouTube)">
+                </div>
+                <div id="trackEditFormError" class="auth-error" style="display:none;"></div>
+                <button type="button" class="auth-submit" onclick="handleTrackEditSubmit()">Сохранить</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger auth-submit" onclick="handleTrackDelete()">Удалить трек</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sample Create Modal -->
+    <div id="sampleModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('sampleModal')">&times;</button>
+            <h2>Добавить сэмпл</h2>
+            <form id="sampleForm" novalidate>
+                <div class="auth-field">
+                    <select id="sampleTypeSelect">
+                        <option value="Sample">Сэмпл</option>
+                        <option value="Interpolation">Интерполяция</option>
+                        <option value="Cover">Кавер</option>
+                        <option value="Remix">Ремикс</option>
+                    </select>
+                </div>
+                <div class="auth-field">
+                    <input type="text" id="sampleSourceSearch" placeholder="Поиск исходного трека..." oninput="searchSourceTracks()">
+                    <select id="sampleSampledTrackSelect" size="5" style="min-height:120px;"></select>
+                </div>
+                <div class="auth-field">
+                    <input type="number" id="sampleStartTimeInput" placeholder="Таймкод сэмпла (сек)">
+                </div>
+                <div class="auth-field">
+                    <textarea id="sampleDescriptionInput" placeholder="Описание сэмпла"></textarea>
+                </div>
+                <div id="sampleFormError" class="auth-error" style="display:none;"></div>
+                <button type="button" class="auth-submit" onclick="handleSampleSubmit()">Добавить сэмпл</button>
+            </form>
+        </div>
     </div>
 
     <script src="modules/utils.js"></script>
@@ -31,6 +101,10 @@
     <script src="modules/api.js"></script>
     <script src="modules/render.js"></script>
     <script>
+        let currentTrackId = null;
+        let currentTrackData = null;
+        let allTracksCache = [];
+
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
             updateUIAuthState();
@@ -40,14 +114,170 @@
                 document.getElementById('trackDetail').innerHTML = '<p class="empty-state">ID трека не указан</p>';
                 return;
             }
+            currentTrackId = parseInt(id);
             try {
-                const track = await getTrackById(parseInt(id));
-                const samples = await getSamplesByTrack(parseInt(id));
+                const track = await getTrackById(currentTrackId);
+                currentTrackData = track;
+                const samples = await getSamplesByTrack(currentTrackId);
                 renderTrackDetail(track, samples);
+                renderTrackActions();
+                await loadTracksCache();
             } catch (e) {
                 document.getElementById('trackDetail').innerHTML = '<p class="empty-state">Ошибка загрузки: ' + e.message + '</p>';
             }
         });
+
+        function renderTrackActions() {
+            const user = getCurrentUser();
+            const header = document.getElementById('trackHeader');
+            if (!user) { header.innerHTML = ''; return; }
+            header.innerHTML = `
+                <button class="btn-primary" onclick="openTrackEditModal()">✏️ Редактировать</button>
+                <button class="btn-primary" onclick="openSampleCreateModal()">+ Добавить сэмпл</button>
+            `;
+        }
+
+        async function loadTracksCache() {
+            try {
+                allTracksCache = await getTracks();
+            } catch (e) {
+                allTracksCache = [];
+            }
+        }
+
+        // === TRACK EDIT ===
+        function openTrackEditModal() {
+            if (!currentTrackData) return;
+            document.getElementById('trackEditTitleInput').value = currentTrackData.title || '';
+            document.getElementById('trackEditDurationInput').value = currentTrackData.durationSeconds || '';
+            document.getElementById('trackEditNumberInput').value = currentTrackData.trackNumber || '';
+            document.getElementById('trackEditGenreInput').value = currentTrackData.genre || '';
+            document.getElementById('trackEditUrlInput').value = currentTrackData.resourceUrl || '';
+            document.getElementById('trackEditFormError').style.display = 'none';
+            openModal('trackEditModal');
+        }
+
+        async function handleTrackEditSubmit() {
+            const title = document.getElementById('trackEditTitleInput').value.trim() || null;
+            const durationSeconds = parseInt(document.getElementById('trackEditDurationInput').value) || null;
+            const trackNumber = parseInt(document.getElementById('trackEditNumberInput').value) || null;
+            const genre = document.getElementById('trackEditGenreInput').value.trim() || null;
+            const resourceUrl = document.getElementById('trackEditUrlInput').value.trim() || null;
+            const errorEl = document.getElementById('trackEditFormError');
+            const submitBtn = document.querySelector('#trackEditModal .auth-submit');
+
+            const data = {};
+            if (title) data.title = title;
+            if (durationSeconds !== null) data.durationSeconds = durationSeconds;
+            if (trackNumber !== null) data.trackNumber = trackNumber;
+            if (genre) data.genre = genre;
+            if (resourceUrl) data.resourceUrl = resourceUrl;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Сохранение...';
+            errorEl.style.display = 'none';
+
+            try {
+                await updateTrack(currentTrackId, data);
+                showToast('Трек обновлён', 'success');
+                closeModal('trackEditModal');
+                const track = await getTrackById(currentTrackId);
+                currentTrackData = track;
+                const samples = await getSamplesByTrack(currentTrackId);
+                renderTrackDetail(track, samples);
+                renderTrackActions();
+            } catch (e) {
+                errorEl.textContent = e.message;
+                errorEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Сохранить';
+            }
+        }
+
+        async function handleTrackDelete() {
+            if (!confirm('Удалить трек и все связанные сэмплы?')) return;
+            const submitBtn = document.querySelector('#trackEditModal .auth-submit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Удаление...';
+            try {
+                await deleteTrack(currentTrackId);
+                showToast('Трек удалён', 'success');
+                window.location.href = 'index.html';
+            } catch (e) {
+                document.getElementById('trackEditFormError').textContent = e.message;
+                document.getElementById('trackEditFormError').style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Сохранить';
+            }
+        }
+
+        // === SAMPLE CREATE ===
+        function openSampleCreateModal() {
+            document.getElementById('sampleTypeSelect').value = 'Sample';
+            document.getElementById('sampleSourceSearch').value = '';
+            document.getElementById('sampleStartTimeInput').value = '';
+            document.getElementById('sampleDescriptionInput').value = '';
+            document.getElementById('sampleFormError').style.display = 'none';
+            populateSourceTracks(allTracksCache);
+            openModal('sampleModal');
+        }
+
+        function populateSourceTracks(tracks) {
+            const select = document.getElementById('sampleSampledTrackSelect');
+            if (!tracks || tracks.length === 0) {
+                select.innerHTML = '<option disabled>Нет треков</option>';
+                return;
+            }
+            select.innerHTML = tracks
+                .filter(t => t.id !== currentTrackId)
+                .map(t => `<option value="${t.id}">${escapeHtml(t.title)} — ${escapeHtml(t.artistName || '')}</option>`)
+                .join('');
+        }
+
+        function searchSourceTracks() {
+            const q = document.getElementById('sampleSourceSearch').value.trim().toLowerCase();
+            if (!q) { populateSourceTracks(allTracksCache); return; }
+            const filtered = allTracksCache.filter(t =>
+                t.id !== currentTrackId &&
+                (t.title.toLowerCase().includes(q) || (t.artistName && t.artistName.toLowerCase().includes(q)))
+            );
+            populateSourceTracks(filtered);
+        }
+
+        async function handleSampleSubmit() {
+            const type = document.getElementById('sampleTypeSelect').value;
+            const sampledTrackId = parseInt(document.getElementById('sampleSampledTrackSelect').value);
+            const startTimeSeconds = parseInt(document.getElementById('sampleStartTimeInput').value) || null;
+            const description = document.getElementById('sampleDescriptionInput').value.trim() || null;
+            const errorEl = document.getElementById('sampleFormError');
+            const submitBtn = document.querySelector('#sampleModal .auth-submit');
+
+            if (!sampledTrackId) {
+                errorEl.textContent = 'Выберите исходный трек';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Добавление...';
+            errorEl.style.display = 'none';
+
+            try {
+                await createSample({ type, description, startTimeSeconds, trackId: currentTrackId, sampledTrackId });
+                showToast('Сэмпл добавлен', 'success');
+                closeModal('sampleModal');
+                const track = await getTrackById(currentTrackId);
+                currentTrackData = track;
+                const samples = await getSamplesByTrack(currentTrackId);
+                renderTrackDetail(track, samples);
+                renderTrackActions();
+            } catch (e) {
+                errorEl.textContent = e.message;
+                errorEl.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Добавить сэмпл';
+            }
+        }
     </script>
 </body>
 </html>

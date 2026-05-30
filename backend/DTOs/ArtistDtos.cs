@@ -17,6 +17,7 @@ public class ArtistDto
     public string? WikiLink { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public int TrackCount { get; set; }
 }
 
 /// <summary>DTO исполнителя с альбомами и треками</summary>
