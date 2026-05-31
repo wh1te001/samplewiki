@@ -83,7 +83,7 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(s => s.SampledTrack)
-                .WithMany()
+                .WithMany(t => t.SampledBy)
                 .HasForeignKey(s => s.SampledTrackId)
                 .OnDelete(DeleteBehavior.Restrict);
 

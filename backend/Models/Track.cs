@@ -5,9 +5,6 @@ public class Track : BaseEntity
     /// <summary>Название трека (например: "Come Together")</summary>
     public required string Title { get; set; }
 
-    /// <summary>Длительность трека в секундах</summary>
-    public int DurationSeconds { get; set; }
-
     /// <summary>Номер трека в альбоме</summary>
     public int? TrackNumber { get; set; }
 
@@ -35,8 +32,11 @@ public class Track : BaseEntity
     /// <summary>Связь: Пользователь, добавивший трек</summary>
     public User User { get; set; } = null!;
 
-    /// <summary>Связь: Сэмплы из этого трека</summary>
+    /// <summary>Связь: Сэмплы из этого трека (как sampler)</summary>
     public ICollection<Sample> Samples { get; set; } = new List<Sample>();
+
+    /// <summary>Связь: Сэмплы, в которых этот трек является источником (reverse samples)</summary>
+    public ICollection<Sample> SampledBy { get; set; } = new List<Sample>();
 
     /// <summary>Связь: История правок трека</summary>
     public ICollection<Revision> Revisions { get; set; } = new List<Revision>();

@@ -1,29 +1,3 @@
-function openModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
-}
-function closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('active');
-}
-// Close modal on overlay click
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-overlay')) {
-        e.target.classList.remove('active');
-    }
-});
-// Close modal on Escape
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-    }
-});
-
-function slugify(text) {
-    if (!text) return '';
-    return text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/^-+|-+$/g, '') || 'unknown';
-}
-
 function embedUrlFromUrl(url) {
     if (!url) return null;
     // YouTube
@@ -42,6 +16,29 @@ function embedUrlFromUrl(url) {
         if (bcMatch) return { type: 'bandcamp', id: bcMatch[1], embed: `https://bandcamp.com/EmbeddedPlayer/track=${bcMatch[1]}/size=large/bgcol=ffffff/linkcol=cc0000/tracklist=false/transparent=true/` };
         return { type: 'bandcamp', id: url, embed: `https://bandcamp.com/EmbeddedPlayer/track=${encodeURIComponent(url)}/size=large/bgcol=ffffff/linkcol=cc0000/tracklist=false/transparent=true/` };
     }
+    // Rutube
+    const rtMatch = url.match(/rutube\.ru\/video\/([a-f0-9]{32})/);
+    if (rtMatch) {
+        return {
+            type: 'rutube',
+            id: rtMatch[1],
+            embed: `https://rutube.ru/play/embed/${rtMatch[1]}`
+        };
+    }
+    // VK Video
+    const vkMatch = url.match(/(?:vk\.com\/video|vkvideo\.ru\/video)(-?\d+)_(\d+)/);
+    if (vkMatch) {
+        const oid = vkMatch[1];
+        const vid = vkMatch[2];
+        return {
+            type: 'vkvideo',
+            id: oid + '_' + vid,
+            oid: oid,
+            videoid: vid,
+            hash: url.match(/[?&]hash=([a-f0-9]+)/)?.[1] || '',
+            embed: `https://vk.com/video_ext.php?oid=${oid}&id=${vid}${url.match(/[?&]hash=([a-f0-9]+)/)?.[1] ? '&hash=' + url.match(/[?&]hash=([a-f0-9]+)/)[1] : ''}`
+        };
+    }
     return null;
 }
 
@@ -54,6 +51,12 @@ function embedHtml(url, title, startSeconds = 0) {
     }
     if (info.type === 'bandcamp') {
         return `<iframe style="border:0;width:100%;height:120px;" src="${info.embed}" seamless></iframe>`;
+    }
+    if (info.type === 'rutube') {
+        return `<iframe width="100%" height="100%" src="${info.embed}" title="${escapeHtml(title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+    }
+    if (info.type === 'vkvideo') {
+        return `<iframe width="100%" height="100%" src="${info.embed}" title="${escapeHtml(title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
     }
     return '';
 }
@@ -71,10 +74,10 @@ function jumpToTime(containerId, url, title, seconds) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const iframe = container.querySelector('iframe[src*="youtube.com"]');
-    if (iframe) {
-        sendYtCommand(iframe, 'seekTo', [seconds, true]);
-        sendYtCommand(iframe, 'playVideo');
+    const ytIframe = container.querySelector('iframe[src*="youtube.com"]');
+    if (ytIframe) {
+        sendYtCommand(ytIframe, 'seekTo', [seconds, true]);
+        sendYtCommand(ytIframe, 'playVideo');
         return;
     }
 
@@ -82,6 +85,12 @@ function jumpToTime(containerId, url, title, seconds) {
     const info = embedUrlFromUrl(url);
     if (info && info.type === 'youtube') {
         container.innerHTML = `<iframe width="100%" height="100%" src="${info.embed + '&start=' + seconds + '&autoplay=1'}" title="${escapeHtml(title)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+    }
+    if (info && info.type === 'rutube') {
+        container.innerHTML = `<iframe width="100%" height="100%" src="${info.embed + '?t=' + seconds + '&autoplay=1'}" title="${escapeHtml(title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+    }
+    if (info && info.type === 'vkvideo') {
+        container.innerHTML = `<iframe width="100%" height="100%" src="${info.embed + '&t=' + seconds + '&autoplay=1'}" title="${escapeHtml(title)}" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
     }
 }
 
@@ -135,12 +144,11 @@ function renderArtistDetail(artist) {
 
     if (tracks.length > 0) {
         html += `<div class="detail-section"><h3>Треки (${tracks.length})</h3>`;
-        html += `<table><thead><tr><th>#</th><th>Название</th><th>Длительность</th><th>Жанр</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>#</th><th>Название</th><th>Жанр</th></tr></thead><tbody>`;
         tracks.forEach((t, i) => {
             html += `<tr class="track-row" onclick="window.location.href='track.html?id=${t.id}'">
                 <td>${i + 1}</td>
                 <td class="track-title-cell"><a href="track.html?id=${t.id}" onclick="event.stopPropagation();">${escapeHtml(t.title)}</a></td>
-                <td class="track-meta-cell">${formatTime(t.durationSeconds)}</td>
                 <td class="track-meta-cell">${escapeHtml(t.genre || '')}</td>
             </tr>`;
         });
@@ -193,7 +201,7 @@ function renderSearchResults(results) {
             html += `<div class="card" onclick="window.location.href='track.html?id=${t.id}'">
                 <div class="thumbnail-40-placeholder">♫</div>
                 <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
-                    <div><h3>${escapeHtml(t.title)}</h3><p>${formatTime(t.durationSeconds)} · ${escapeHtml(t.genre || '')}</p></div>
+                    <div><h3>${escapeHtml(t.title)}</h3><p>${escapeHtml(t.genre || '')}</p></div>
                     <span style="color:#bbb;">→</span>
                 </div>
             </div>`;
@@ -230,8 +238,9 @@ function getSampleTypeBadge(type) {
     return `<span class="sample-type-badge">${map[type] || type}</span>`;
 }
 
-function renderTrackDetail(track, samples) {
+function renderTrackDetail(track, samples, sampledBy) {
     const detail = document.getElementById('trackDetail');
+    sampledBy = sampledBy || [];
     const artistName = track.artist ? track.artist.name : 'Неизвестен';
     const albumTitle = track.album ? track.album.title : null;
     const hasTrackEmbed = !!embedUrlFromUrl(track.resourceUrl);
@@ -257,10 +266,11 @@ function renderTrackDetail(track, samples) {
     if (albumTitle) html += `<span><span class="label">Альбом</span> <strong>${escapeHtml(albumTitle)}</strong></span>`;
     if (track.album && track.album.releaseYear) html += `<span><span class="label">Год</span> <strong>${track.album.releaseYear}</strong></span>`;
     if (track.genre) html += `<span><span class="label">Жанр</span> <strong>${escapeHtml(track.genre)}</strong></span>`;
-    if (track.durationSeconds) html += `<span><span class="label">Длительность</span> <strong>${formatTime(track.durationSeconds)}</strong></span>`;
+    
     html += `</div>`;
     if (track.resourceUrl) {
-        html += `<div style="margin-top:0.5rem;"><a href="${escapeHtml(track.resourceUrl)}" target="_blank" class="listen-link">Слушать на YouTube →</a></div>`;
+        const platformLabel = track.resourceUrl.includes('vk.com') || track.resourceUrl.includes('vkvideo.ru') ? 'VK Video' : track.resourceUrl.includes('rutube.ru') ? 'Rutube' : 'YouTube';
+        html += `<div style="margin-top:0.5rem;"><a href="${escapeHtml(track.resourceUrl)}" target="_blank" class="listen-link">Слушать на ${platformLabel} →</a></div>`;
     }
     html += `</div></div>`;
 
@@ -283,7 +293,26 @@ function renderTrackDetail(track, samples) {
             </tr>`;
         });
         html += `</tbody></table></div>`;
-    } else {
+    }
+
+    if (sampledBy && sampledBy.length > 0) {
+        html += `<div class="detail-section"><h3>Использован в (${sampledBy.length})</h3>`;
+        html += `<table class="connections-table"><thead><tr><th></th><th>Название</th><th>Исполнитель</th><th>Тип</th></tr></thead><tbody>`;
+        sampledBy.forEach(s => {
+            html += `<tr class="track-row" onclick="window.location.href='sample.html?id=${s.id}'">
+                <td><div class="thumbnail-40-placeholder">♫</div></td>
+                <td class="track-title-cell">
+                    <a href="track.html?id=${s.trackId}" onclick="event.stopPropagation();">${escapeHtml(s.trackTitle)}</a>
+                    ${s.startTimeSeconds != null ? `<span class="sample-timecode" data-url="${escapeHtml(s.resourceUrl)}" data-title="${escapeHtml(s.trackTitle)}" data-seconds="${s.startTimeSeconds}" onclick="event.stopPropagation(); jumpTrackEmbed(this)">${formatTime(s.startTimeSeconds)}</span>` : ''}
+                </td>
+                <td class="track-artist-cell">${escapeHtml(s.trackArtistName || '')}</td>
+                <td>${getSampleTypeBadge(s.type)}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if ((!samples || samples.length === 0) && (!sampledBy || sampledBy.length === 0)) {
         html += `<div class="empty-state">Сэмплы не добавлены</div>`;
     }
 
@@ -316,19 +345,15 @@ function renderAlbumDetail(album) {
     if (album.releaseYear) html += `<span><span class="label">Год</span> <strong>${album.releaseYear}</strong></span>`;
     html += `<span><span class="label">Треков</span> <strong>${tracks.length}</strong></span>`;
     html += `</div>`;
-    if (album.description) {
-        html += `<p style="margin-top:0.5rem;color:#666;font-size:0.85rem;">${escapeHtml(album.description)}</p>`;
-    }
     html += `</div></div>`;
 
     if (tracks.length > 0) {
         html += `<div class="detail-section"><h3>Треки</h3>`;
-        html += `<table><thead><tr><th>#</th><th>Название</th><th>Длительность</th><th>Жанр</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>#</th><th>Название</th><th>Жанр</th></tr></thead><tbody>`;
         tracks.forEach((t, i) => {
             html += `<tr class="track-row" onclick="window.location.href='track.html?id=${t.id}'">
                 <td>${i + 1}</td>
                 <td class="track-title-cell"><a href="track.html?id=${t.id}" onclick="event.stopPropagation();">${escapeHtml(t.title)}</a></td>
-                <td class="track-meta-cell">${formatTime(t.durationSeconds)}</td>
                 <td class="track-meta-cell">${escapeHtml(t.genre || '')}</td>
             </tr>`;
         });
@@ -348,7 +373,7 @@ function renderSampleDetail(samplerTrack, sampledTrack, sample) {
         <span class="current">Сэмпл</span>
     </div>`;
 
-    html += `<div class="page-header" style="margin-bottom:1rem;"><h1>${escapeHtml(samplerTrack.title)}» содержит «${escapeHtml(sampledTrack.title)}»</h1></div>`;
+    html += `<div class="page-header" style="margin-bottom:1rem;"><h1>«${escapeHtml(samplerTrack.title)}» содержит «${escapeHtml(sampledTrack.title)}»</h1></div>`;
 
     html += `<div class="sample-video-grid">`;
     html += `<div class="sample-video-col">`;
@@ -376,9 +401,6 @@ function renderSampleDetail(samplerTrack, sampledTrack, sample) {
     html += `<div style="margin-top:0.5rem;">
         <a href="track.html?id=${sampledTrack.id}" style="color:#cc0000;font-weight:600;font-size:0.85rem;text-decoration:none;">${escapeHtml(sampledTrack.title)}</a> ${getSampleTypeBadge(sample.type)}
         <p style="color:#888;font-size:0.8rem;">${escapeHtml(sampledTrack.artistName || '')}</p>`;
-    if (sample.description) {
-        html += `<p style="color:#666;font-size:0.85rem;margin-top:0.25rem;">${escapeHtml(sample.description)}</p>`;
-    }
     html += `</div></div></div>`;
 
     detail.innerHTML = html;

@@ -31,7 +31,6 @@ public class SamplesController : ControllerBase
                 {
                     Id = s.Id,
                     Type = s.Type.ToString(),
-                    Description = s.Description,
                     StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
                     SampledTrackId = s.SampledTrackId,
@@ -70,7 +69,6 @@ public class SamplesController : ControllerBase
             {
                 Id = sample.Id,
                 Type = sample.Type.ToString(),
-                Description = sample.Description,
                 StartTimeSeconds = sample.StartTimeSeconds,
                 TrackId = sample.TrackId,
                 SampledTrackId = sample.SampledTrackId,
@@ -101,7 +99,6 @@ public class SamplesController : ControllerBase
                 {
                     Id = s.Id,
                     Type = s.Type.ToString(),
-                    Description = s.Description,
                     StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
                     SampledTrackId = s.SampledTrackId,
@@ -136,7 +133,6 @@ public class SamplesController : ControllerBase
             var sample = new Sample
             {
                 Type = sampleType,
-                Description = request.Description,
                 StartTimeSeconds = request.StartTimeSeconds,
                 TrackId = request.TrackId,
                 SampledTrackId = request.SampledTrackId
@@ -149,7 +145,6 @@ public class SamplesController : ControllerBase
             {
                 Id = sample.Id,
                 Type = sample.Type.ToString(),
-                Description = sample.Description,
                 StartTimeSeconds = sample.StartTimeSeconds,
                 TrackId = sample.TrackId,
                 SampledTrackId = sample.SampledTrackId,
@@ -184,8 +179,6 @@ public class SamplesController : ControllerBase
                     return BadRequest("Неверный тип сэмпла");
                 sample.Type = sampleType;
             }
-            if (!string.IsNullOrEmpty(request.Description))
-                sample.Description = request.Description;
             if (request.StartTimeSeconds.HasValue)
                 sample.StartTimeSeconds = request.StartTimeSeconds;
             if (request.SampledTrackId.HasValue)
@@ -199,7 +192,6 @@ public class SamplesController : ControllerBase
             {
                 Id = sample.Id,
                 Type = sample.Type.ToString(),
-                Description = sample.Description,
                 StartTimeSeconds = sample.StartTimeSeconds,
                 TrackId = sample.TrackId,
                 SampledTrackId = sample.SampledTrackId,
@@ -248,7 +240,6 @@ public class SamplesController : ControllerBase
         {
             Id = t.Id,
             Title = t.Title,
-            DurationSeconds = t.DurationSeconds,
             TrackNumber = t.TrackNumber,
             Genre = t.Genre,
             ResourceUrl = t.ResourceUrl,

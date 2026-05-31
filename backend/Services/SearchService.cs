@@ -34,7 +34,7 @@ public class SearchService
             })
             .ToListAsync();
 
-        _logger.LogInformation("🔍 Поиск исполнителей: '{Query}' - найдено {Count}", query, results.Count);
+        _logger.LogInformation("Поиск исполнителей: {Query} - найдено {Count}", query, results.Count);
 
         return results;
     }
@@ -52,14 +52,13 @@ public class SearchService
                 Id = a.Id,
                 Title = a.Title,
                 ReleaseYear = a.ReleaseYear,
-                Description = a.Description,
                 ArtistId = a.ArtistId,
                 CreatedAt = a.CreatedAt,
                 UpdatedAt = a.UpdatedAt
             })
             .ToListAsync();
 
-        _logger.LogInformation("🔍 Поиск альбомов: '{Query}' - найдено {Count}", query, results.Count);
+        _logger.LogInformation("Поиск альбомов: {Query} - найдено {Count}", query, results.Count);
 
         return results;
     }
@@ -76,7 +75,6 @@ public class SearchService
             {
                 Id = t.Id,
                 Title = t.Title,
-                DurationSeconds = t.DurationSeconds,
                 TrackNumber = t.TrackNumber,
                 Genre = t.Genre,
                 ResourceUrl = t.ResourceUrl,
@@ -88,7 +86,7 @@ public class SearchService
             })
             .ToListAsync();
 
-        _logger.LogInformation("🔍 Поиск треков: '{Query}' - найдено {Count}", query, results.Count);
+        _logger.LogInformation("Поиск треков: {Query} - найдено {Count}", query, results.Count);
 
         return results;
     }
@@ -100,13 +98,12 @@ public class SearchService
 
         var results = await _dbContext.Samples
             .Include(s => s.SampledTrack).ThenInclude(t => t.Artist)
-            .Where(s => s.SampledTrack.Title.Contains(query) || (s.Description != null && s.Description.Contains(query)))
+            .Where(s => s.SampledTrack.Title.Contains(query))
             .Take(limit)
             .Select(s => new SampleDto
             {
                 Id = s.Id,
                 Type = s.Type.ToString(),
-                Description = s.Description,
                 StartTimeSeconds = s.StartTimeSeconds,
                 TrackId = s.TrackId,
                 SampledTrackId = s.SampledTrackId,
@@ -117,7 +114,7 @@ public class SearchService
             })
             .ToListAsync();
 
-        _logger.LogInformation("🔍 Поиск сэмплов: '{Query}' - найдено {Count}", query, results.Count);
+        _logger.LogInformation("Поиск сэмплов: {Query} - найдено {Count}", query, results.Count);
 
         return results;
     }

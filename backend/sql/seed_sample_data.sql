@@ -29,91 +29,77 @@ INSERT INTO `Artists` (`Name`, `Description`, `WikiLink`) VALUES
 SET @georgeDukeId = LAST_INSERT_ID();
 
 -- ==================== ALBUMS ====================
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('Discovery', 2001, 'Breakthrough album by Daft Punk', @daftId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('Discovery', 2001, @daftId);
 SET @daftAlbumDiscovery = LAST_INSERT_ID();
 
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('Random Access Memories', 2013, 'Grammy-winning album', @daftId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('Random Access Memories', 2013, @daftId);
 SET @daftAlbumRAM = LAST_INSERT_ID();
 
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('Graduation', 2007, 'Third studio album by Kanye West', @kanyeId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('Graduation', 2007, @kanyeId);
 SET @kanyeAlbumGraduation = LAST_INSERT_ID();
 
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('My Beautiful Dark Twisted Fantasy', 2010, 'Critically acclaimed album', @kanyeId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('My Beautiful Dark Twisted Fantasy', 2010, @kanyeId);
 SET @kanyeAlbumMBDTF = LAST_INSERT_ID();
 
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('In the Court of the Crimson King', 1969, 'Debut album by King Crimson', @kingCrimsonId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('In the Court of the Crimson King', 1969, @kingCrimsonId);
 SET @kingCrimsonAlbum = LAST_INSERT_ID();
 
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('Unmap', 2009, 'Debut album by Volcano Choir', @volcanoChoirId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('Unmap', 2009, @volcanoChoirId);
 SET @volcanoChoirAlbum = LAST_INSERT_ID();
 
-INSERT INTO `Albums` (`Title`, `ReleaseYear`, `Description`, `ArtistId`) VALUES
-('Dream On', 1982, 'Album by George Duke', @georgeDukeId);
+INSERT INTO `Albums` (`Title`, `ReleaseYear`, `ArtistId`) VALUES
+('Dream On', 1982, @georgeDukeId);
 SET @georgeDukeAlbum = LAST_INSERT_ID();
 
 -- ==================== TRACKS ====================
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Harder, Better, Faster, Stronger', 224, 4, 'Electronic', 'https://www.youtube.com/watch?v=gAjR4_CbPpQ', @daftAlbumDiscovery, @daftId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Harder, Better, Faster, Stronger', 4, 'Electronic', 'https://www.youtube.com/watch?v=gAjR4_CbPpQ', @daftAlbumDiscovery, @daftId, @userId);
 SET @daftTrackHBFS = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Digital Love', 300, 5, 'Electronic', 'https://www.youtube.com/watch?v=FxzBvqY5PP0', @daftAlbumDiscovery, @daftId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Digital Love', 5, 'Electronic', 'https://www.youtube.com/watch?v=FxzBvqY5PP0', @daftAlbumDiscovery, @daftId, @userId);
 SET @daftTrackDigitalLove = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Get Lucky', 369, 1, 'Funk', 'https://www.youtube.com/watch?v=5NV6Rdv1a3I', @daftAlbumRAM, @daftId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Get Lucky', 1, 'Funk', 'https://www.youtube.com/watch?v=5NV6Rdv1a3I', @daftAlbumRAM, @daftId, @userId);
 SET @daftTrackGetLucky = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Stronger', 311, 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=PsO6ZnUZI0g', @kanyeAlbumGraduation, @kanyeId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Stronger', 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=PsO6ZnUZI0g', @kanyeAlbumGraduation, @kanyeId, @userId);
 SET @kanyeTrackStronger = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Power', 292, 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=L53gjP-TtGE', @kanyeAlbumMBDTF, @kanyeId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Power', 1, 'Hip-Hop', 'https://www.youtube.com/watch?v=L53gjP-TtGE', @kanyeAlbumMBDTF, @kanyeId, @userId);
 SET @kanyeTrackPower = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Runaway', 543, 9, 'Hip-Hop', 'https://www.youtube.com/watch?v=Bm5iA4Zupek', @kanyeAlbumMBDTF, @kanyeId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Runaway', 9, 'Hip-Hop', 'https://www.youtube.com/watch?v=Bm5iA4Zupek', @kanyeAlbumMBDTF, @kanyeId, @userId);
 SET @kanyeTrackRunaway = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('21st Century Schizoid Man', 441, 1, 'Progressive Rock', 'https://www.youtube.com/watch?v=7OvW8Z7kiws', @kingCrimsonAlbum, @kingCrimsonId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('21st Century Schizoid Man', 1, 'Progressive Rock', 'https://www.youtube.com/watch?v=7OvW8Z7kiws', @kingCrimsonAlbum, @kingCrimsonId, @userId);
 SET @kingCrimsonTrackSchizoid = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('Still', 268, 3, 'Indie Folk', NULL, @volcanoChoirAlbum, @volcanoChoirId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('Still', 3, 'Indie Folk', NULL, @volcanoChoirAlbum, @volcanoChoirId, @userId);
 SET @volcanoChoirTrackStill = LAST_INSERT_ID();
 
-INSERT INTO `Tracks` (`Title`, `DurationSeconds`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
-VALUES ('I Love You More', 248, 2, 'Jazz Funk', 'https://www.youtube.com/watch?v=IEibygqqLZc', @georgeDukeAlbum, @georgeDukeId, @userId);
+INSERT INTO `Tracks` (`Title`, `TrackNumber`, `Genre`, `ResourceUrl`, `AlbumId`, `ArtistId`, `UserId`)
+VALUES ('I Love You More', 2, 'Jazz Funk', 'https://www.youtube.com/watch?v=IEibygqqLZc', @georgeDukeAlbum, @georgeDukeId, @userId);
 SET @georgeDukeTrackILoveYouMore = LAST_INSERT_ID();
 
 -- ==================== SAMPLES ====================
--- Stronger samples HBFS by Daft Punk
-INSERT INTO `Samples` (`Type`, `Description`, `StartTimeSeconds`, `TrackId`, `SampledTrackId`) VALUES
-(0, 'Kanye West''s "Stronger" prominently samples the vocal hook from Daft Punk''s "Harder, Better, Faster, Stronger".',
- 15, @kanyeTrackStronger, @daftTrackHBFS);
-
--- Power samples 21st Century Schizoid Man by King Crimson
-INSERT INTO `Samples` (`Type`, `Description`, `StartTimeSeconds`, `TrackId`, `SampledTrackId`) VALUES
-(0, 'Kanye West''s "Power" samples the iconic guitar riff from King Crimson''s "21st Century Schizoid Man" (1969).',
- 0, @kanyeTrackPower, @kingCrimsonTrackSchizoid);
-
--- Runaway interpolates Still by Volcano Choir
-INSERT INTO `Samples` (`Type`, `Description`, `StartTimeSeconds`, `TrackId`, `SampledTrackId`) VALUES
-(1, '"Runaway" uses an interpolation of the vocal melody from Volcano Choir''s "Still".',
- NULL, @kanyeTrackRunaway, @volcanoChoirTrackStill);
-
--- Digital Love samples I Love You More by George Duke
-INSERT INTO `Samples` (`Type`, `Description`, `StartTimeSeconds`, `TrackId`, `SampledTrackId`) VALUES
-(0, 'Daft Punk''s "Digital Love" samples the piano riff from George Duke''s "I Love You More" (1982).',
- 5, @daftTrackDigitalLove, @georgeDukeTrackILoveYouMore);
+INSERT INTO `Samples` (`Type`, `StartTimeSeconds`, `TrackId`, `SampledTrackId`) VALUES
+(0, 15, @kanyeTrackStronger, @daftTrackHBFS),
+(0, 0, @kanyeTrackPower, @kingCrimsonTrackSchizoid),
+(1, NULL, @kanyeTrackRunaway, @volcanoChoirTrackStill),
+(0, 5, @daftTrackDigitalLove, @georgeDukeTrackILoveYouMore);
 
 -- ==================== ARTWORKS ====================
 INSERT INTO `Artworks` (`Title`, `ImageUrl`, `Description`, `AlbumId`) VALUES

@@ -4,7 +4,6 @@ namespace SampleWiki.DTOs;
 public class CreateTrackRequest
 {
     public required string Title { get; set; }
-    public int DurationSeconds { get; set; }
     public int? TrackNumber { get; set; }
     public string? Genre { get; set; }
     public string? ResourceUrl { get; set; }
@@ -16,7 +15,6 @@ public class CreateTrackRequest
 public class UpdateTrackRequest
 {
     public string? Title { get; set; }
-    public int? DurationSeconds { get; set; }
     public int? TrackNumber { get; set; }
     public string? Genre { get; set; }
     public string? ResourceUrl { get; set; }
@@ -27,7 +25,6 @@ public class TrackDto
 {
     public int Id { get; set; }
     public required string Title { get; set; }
-    public int DurationSeconds { get; set; }
     public int? TrackNumber { get; set; }
     public string? Genre { get; set; }
     public string? ResourceUrl { get; set; }
@@ -46,5 +43,7 @@ public class TrackDetailDto : TrackDto
     public required ArtistDto Artist { get; set; }
     public required UserDto User { get; set; }
     public List<SampleDto> Samples { get; set; } = new();
+    /// <summary>Сэмплы, где этот трек является источником</summary>
+    public List<SampleDto> SampledBy { get; set; } = new();
     public List<RevisionDto> Revisions { get; set; } = new();
 }

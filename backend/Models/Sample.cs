@@ -4,8 +4,6 @@ public class Sample : BaseEntity
 {
     public SampleType Type { get; set; } = SampleType.Sample;
 
-    public string? Description { get; set; }
-
     /// <summary>Время начала сэмпла в треке (в секундах)</summary>
     public int? StartTimeSeconds { get; set; }
 

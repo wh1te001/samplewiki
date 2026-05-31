@@ -5,7 +5,6 @@ public class CreateAlbumRequest
 {
     public required string Title { get; set; }
     public int? ReleaseYear { get; set; }
-    public string? Description { get; set; }
     public int ArtistId { get; set; }
 }
 
@@ -15,7 +14,6 @@ public class AlbumDto
     public int Id { get; set; }
     public required string Title { get; set; }
     public int? ReleaseYear { get; set; }
-    public string? Description { get; set; }
     public int ArtistId { get; set; }
     public string? ImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }

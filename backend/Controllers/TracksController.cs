@@ -31,7 +31,6 @@ public class TracksController : ControllerBase
                 {
                     Id = t.Id,
                     Title = t.Title,
-                    DurationSeconds = t.DurationSeconds,
                     TrackNumber = t.TrackNumber,
                     Genre = t.Genre,
                     ResourceUrl = t.ResourceUrl,
@@ -66,6 +65,7 @@ public class TracksController : ControllerBase
                 .Include(t => t.Artist)
                 .Include(t => t.User)
                 .Include(t => t.Samples).ThenInclude(s => s.SampledTrack).ThenInclude(st => st.Artist)
+                .Include(t => t.SampledBy).ThenInclude(s => s.Track).ThenInclude(st => st.Artist)
                 .Include(t => t.Revisions)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -76,7 +76,6 @@ public class TracksController : ControllerBase
             {
                 Id = track.Id,
                 Title = track.Title,
-                DurationSeconds = track.DurationSeconds,
                 TrackNumber = track.TrackNumber,
                 Genre = track.Genre,
                 ResourceUrl = track.ResourceUrl,
@@ -115,10 +114,23 @@ public class TracksController : ControllerBase
                 {
                     Id = s.Id,
                     Type = s.Type.ToString(),
-                    Description = s.Description,
                     StartTimeSeconds = s.StartTimeSeconds,
                     TrackId = s.TrackId,
                     SampledTrackId = s.SampledTrackId,
+                    SampledTrackTitle = s.SampledTrack.Title,
+                    SampledTrackArtistName = s.SampledTrack.Artist.Name,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt
+                }).ToList(),
+                SampledBy = track.SampledBy.Select(s => new SampleDto
+                {
+                    Id = s.Id,
+                    Type = s.Type.ToString(),
+                    StartTimeSeconds = s.StartTimeSeconds,
+                    TrackId = s.TrackId,
+                    SampledTrackId = s.SampledTrackId,
+                    TrackTitle = s.Track.Title,
+                    TrackArtistName = s.Track.Artist.Name,
                     SampledTrackTitle = s.SampledTrack.Title,
                     SampledTrackArtistName = s.SampledTrack.Artist.Name,
                     CreatedAt = s.CreatedAt,
@@ -161,7 +173,6 @@ public class TracksController : ControllerBase
                 {
                     Id = t.Id,
                     Title = t.Title,
-                    DurationSeconds = t.DurationSeconds,
                     TrackNumber = t.TrackNumber,
                     Genre = t.Genre,
                     ResourceUrl = t.ResourceUrl,
@@ -199,7 +210,6 @@ public class TracksController : ControllerBase
             var track = new Track
             {
                 Title = request.Title,
-                DurationSeconds = request.DurationSeconds,
                 TrackNumber = request.TrackNumber,
                 Genre = request.Genre,
                 ResourceUrl = request.ResourceUrl,
@@ -215,7 +225,6 @@ public class TracksController : ControllerBase
             {
                 Id = track.Id,
                 Title = track.Title,
-                DurationSeconds = track.DurationSeconds,
                 TrackNumber = track.TrackNumber,
                 Genre = track.Genre,
                 ResourceUrl = track.ResourceUrl,
@@ -250,8 +259,6 @@ public class TracksController : ControllerBase
 
             if (!string.IsNullOrEmpty(request.Title))
                 track.Title = request.Title;
-            if (request.DurationSeconds.HasValue)
-                track.DurationSeconds = request.DurationSeconds.Value;
             if (request.TrackNumber.HasValue)
                 track.TrackNumber = request.TrackNumber.Value;
             if (!string.IsNullOrEmpty(request.Genre))
@@ -267,7 +274,6 @@ public class TracksController : ControllerBase
             {
                 Id = track.Id,
                 Title = track.Title,
-                DurationSeconds = track.DurationSeconds,
                 TrackNumber = track.TrackNumber,
                 Genre = track.Genre,
                 ResourceUrl = track.ResourceUrl,

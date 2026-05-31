@@ -76,7 +76,6 @@ public class ArtistsController : ControllerBase
                     Id = a.Id,
                     Title = a.Title,
                     ReleaseYear = a.ReleaseYear,
-                    Description = a.Description,
                     ArtistId = a.ArtistId,
                     ImageUrl = a.Artworks.FirstOrDefault()?.ImageUrl,
                     CreatedAt = a.CreatedAt,
@@ -86,7 +85,6 @@ public class ArtistsController : ControllerBase
                 {
                     Id = t.Id,
                     Title = t.Title,
-                    DurationSeconds = t.DurationSeconds,
                     TrackNumber = t.TrackNumber,
                     Genre = t.Genre,
                     AlbumId = t.AlbumId,

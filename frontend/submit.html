@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SampleWiki — Создать сэмпл</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-left">
+                <div class="navbar-brand">
+                    <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
+                </div>
+            </div>
+            <div class="navbar-center">
+                <div class="navbar-search">
+                    <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
+                </div>
+            </div>
+            <div class="navbar-right">
+                <ul class="navbar-menu">
+                    <li><a href="submit.html">Добавить</a></li>
+                    <li id="registerNav"><a href="register.html">Регистрация</a></li>
+                    <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        <div class="page-header"><h1>Создать сэмпл</h1></div>
+
+        <div id="submitFormError" class="auth-error" style="display:none;"></div>
+
+        <form id="submitForm" class="submit-form" novalidate>
+            <div class="sf-type-row">
+                <label>Тип сэмпла</label>
+                <select id="sampleTypeSelect">
+                    <option value="Sample">Сэмпл</option>
+                    <option value="Interpolation">Интерполяция</option>
+                    <option value="Cover">Кавер</option>
+                    <option value="Remix">Ремикс</option>
+                </select>
+            </div>
+
+            <div class="sf-compare-grid">
+                <!-- ===== SAMPLER TRACK ===== -->
+                <div class="sf-compare-col">
+                    <h3>Сэмплирующий трек</h3>
+                    <div class="sf-field">
+                        <label>Исполнитель</label>
+                        <input type="text" id="samplerArtistInput" placeholder="Начните вводить имя..." autocomplete="off">
+                        <input type="hidden" id="samplerArtistHidden" value="">
+                        <div id="samplerArtistDropdown" class="ac-dropdown"></div>
+                    </div>
+                    <div class="sf-field">
+                        <label>Название трека</label>
+                        <input type="text" id="samplerTrackInput" placeholder="Начните вводить название..." autocomplete="off">
+                        <input type="hidden" id="samplerTrackHidden" value="">
+                        <div id="samplerTrackDropdown" class="ac-dropdown"></div>
+                        <div id="samplerTrackFound" class="sf-found" style="display:none;"></div>
+                    </div>
+                    <div class="sf-field">
+                        <label>Жанр</label>
+                        <input type="text" id="samplerGenreInput" placeholder="Hip Hop, Rock...">
+                    </div>
+                    <div class="sf-field">
+                        <label>Таймкод сэмпла (сек)</label>
+                        <input type="number" id="samplerTimeInput" placeholder="45">
+                    </div>
+                    <div class="sf-field">
+                        <label>Альбом</label>
+                        <input type="text" id="samplerAlbumInput" placeholder="Название альбома">
+                    </div>
+                    <div class="sf-field-half-row">
+                        <div class="sf-field" style="flex:1;">
+                            <label>Год</label>
+                            <input type="number" id="samplerYearInput" placeholder="2024">
+                        </div>
+                        <div class="sf-field" style="flex:1;">
+                            <label>Изображение (URL)</label>
+                            <input type="text" id="samplerImageUrlInput" placeholder="https://...">
+                            <input type="file" id="samplerFileInput" accept="image/*" style="margin-top:4px;padding:4px;font-size:0.8rem;" onchange="handleFileUpload('samplerFileInput','samplerImageUrlInput')">
+                        </div>
+                    </div>
+                    <div class="sf-field">
+                        <label>YouTube / Embed</label>
+                        <input type="url" id="samplerEmbedInput" placeholder="https://youtube.com/watch?v=...">
+                    </div>
+                </div>
+
+                <!-- ===== ORIGINAL TRACK ===== -->
+                <div class="sf-compare-col">
+                    <h3>Оригинальный трек (откуда сэмпл)</h3>
+                    <div class="sf-field">
+                        <label>Исполнитель</label>
+                        <input type="text" id="originalArtistInput" placeholder="Начните вводить имя..." autocomplete="off">
+                        <input type="hidden" id="originalArtistHidden" value="">
+                        <div id="originalArtistDropdown" class="ac-dropdown"></div>
+                    </div>
+                    <div class="sf-field">
+                        <label>Название трека</label>
+                        <input type="text" id="originalTrackInput" placeholder="Начните вводить название..." autocomplete="off">
+                        <input type="hidden" id="originalTrackHidden" value="">
+                        <div id="originalTrackDropdown" class="ac-dropdown"></div>
+                        <div id="originalTrackFound" class="sf-found" style="display:none;"></div>
+                    </div>
+                    <div class="sf-field">
+                        <label>Жанр</label>
+                        <input type="text" id="originalGenreInput" placeholder="Hip Hop, Rock...">
+                    </div>
+                    <div class="sf-field">
+                        <label>Таймкод (сек)</label>
+                        <input type="number" id="originalTimeInput" placeholder="30">
+                    </div>
+                    <div class="sf-field">
+                        <label>Альбом</label>
+                        <input type="text" id="originalAlbumInput" placeholder="Название альбома">
+                    </div>
+                    <div class="sf-field-half-row">
+                        <div class="sf-field" style="flex:1;">
+                            <label>Год</label>
+                            <input type="number" id="originalYearInput" placeholder="1971">
+                        </div>
+                        <div class="sf-field" style="flex:1;">
+                            <label>Изображение (URL)</label>
+                            <input type="text" id="originalImageUrlInput" placeholder="https://...">
+                            <input type="file" id="originalFileInput" accept="image/*" style="margin-top:4px;padding:4px;font-size:0.8rem;" onchange="handleFileUpload('originalFileInput','originalImageUrlInput')">
+                        </div>
+                    </div>
+                    <div class="sf-field">
+                        <label>YouTube / Embed</label>
+                        <input type="url" id="originalEmbedInput" placeholder="https://youtube.com/watch?v=...">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="submitFormBtn" class="auth-submit" onclick="handleSubmitForm()" style="max-width:300px;">Создать сэмпл</button>
+        </form>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="modules/utils.js"></script>
+    <script src="modules/auth.js"></script>
+    <script src="modules/api.js"></script>
+    <script src="modules/render.js"></script>
+    <script src="modules/submit.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            await checkAuth();
+            updateUIAuthState();
+            if (!getCurrentUser()) {
+                document.getElementById('submitForm').innerHTML = '<div class="empty-state" style="padding:3rem;">Пожалуйста, <a href="auth.html" style="color:#cc0000;">войдите</a> или <a href="register.html" style="color:#cc0000;">зарегистрируйтесь</a>, чтобы создавать сэмплы.</div>';
+                document.getElementById('submitFormBtn').style.display = 'none';
+                return;
+            }
+
+            setupArtistAutocomplete('samplerArtistInput', 'samplerArtistDropdown', 'samplerArtistHidden', function (id) {
+                currentSamplerArtistId = id;
+            });
+            setupArtistAutocomplete('originalArtistInput', 'originalArtistDropdown', 'originalArtistHidden', function (id) {
+                currentOriginalArtistId = id;
+            });
+
+            setupTrackAutocomplete('samplerTrackInput', 'samplerTrackDropdown', 'samplerTrackHidden',
+                'samplerArtistHidden', 'samplerTrackFound');
+            setupTrackAutocomplete('originalTrackInput', 'originalTrackDropdown', 'originalTrackHidden',
+                'originalArtistHidden', 'originalTrackFound');
+        });
+    </script>
+</body>
+</html>

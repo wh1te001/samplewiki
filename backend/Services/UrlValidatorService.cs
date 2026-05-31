@@ -78,6 +78,78 @@ public class UrlValidatorService
         }
     }
 
+    /// <summary>Проверяет валидность ссылки на Rutube видео</summary>
+    public bool IsValidRutubeUrl(string? url)
+    {
+        if (!IsValidUrl(url))
+            return false;
+
+        try
+        {
+            var uri = new Uri(url!);
+            return uri.Host.Contains("rutube.ru");
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Извлекает ID видео из Rutube ссылки (32-символьный hex)</summary>
+    public string? ExtractRutubeId(string? url)
+    {
+        if (!IsValidRutubeUrl(url))
+            return null;
+
+        try
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(url!, @"rutube\.ru\/video\/([a-f0-9]{32})");
+            return match.Success ? match.Groups[1].Value : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Ошибка при извлечении Rutube ID: {Error}", ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>Проверяет валидность ссылки на VK Video</summary>
+    public bool IsValidVkVideoUrl(string? url)
+    {
+        if (!IsValidUrl(url))
+            return false;
+
+        try
+        {
+            var uri = new Uri(url!);
+            return uri.Host.Contains("vk.com") || uri.Host.Contains("vkvideo.ru");
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Извлекает ID видео из VK Video ссылки (формат: oid_id)</summary>
+    public string? ExtractVkVideoId(string? url)
+    {
+        if (!IsValidVkVideoUrl(url))
+            return null;
+
+        try
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(url!, @"(?:vk\.com\/video|vkvideo\.ru\/video)(-?\d+)_(\d+)");
+            if (match.Success)
+                return $"{match.Groups[1].Value}_{match.Groups[2].Value}";
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Ошибка при извлечении VK Video ID: {Error}", ex.Message);
+            return null;
+        }
+    }
+
     /// <summary>Извлекает ID видео из YouTube ссылки</summary>
     public string? ExtractYouTubeId(string? url)
     {

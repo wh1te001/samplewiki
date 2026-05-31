@@ -89,7 +89,6 @@ public class RevisionsController : ControllerBase
                 {
                     Id = revision.Track.Id,
                     Title = revision.Track.Title,
-                    DurationSeconds = revision.Track.DurationSeconds,
                     TrackNumber = revision.Track.TrackNumber,
                     Genre = revision.Track.Genre,
                     AlbumId = revision.Track.AlbumId,

@@ -62,6 +62,7 @@ ASP.NET :5000 ──→ MySQL
 | `search.html` | `/search.html?q=beatles` | Глобальный поиск |
 | `auth.html` | `/auth.html` | Вход |
 | `register.html` | `/register.html` | Регистрация |
+| `submit.html` | `/submit.html` | Создание сэмпла (авторизованные пользователи) |
 
 ---
 
@@ -70,7 +71,8 @@ ASP.NET :5000 ──→ MySQL
 ```
 Artist ──1:N──→ Album ──1:N──→ Track ──1:N──→ Sample
                                    ↑              ↓
-                                   └── SampledTrack ──┘
+                                   │    SampledBy │
+                                   └──────←───────┘
                                     (Sample.TrackId + Sample.SampledTrackId)
 User ──1:N──→ Track
 User ──1:N──→ Revision
@@ -79,9 +81,9 @@ Album ──1:N──→ Artwork (обложки)
 ```
 
 - **Artist**: имя, описание, WikiLink
-- **Album**: название, год выпуска, описание, ArtistId
-- **Track**: название, длительность, номер в альбоме, жанр, ResourceUrl, AlbumId, ArtistId, UserId
-- **Sample**: тип (Sample/Interpolation/Remake), описание, StartTimeSeconds, TrackId (sampler), SampledTrackId (source)
+- **Album**: название, год выпуска, ArtistId (*Description удалён*)
+- **Track**: название, номер в альбоме, жанр, ResourceUrl, AlbumId, ArtistId, UserId; навигация: `Samples` (forward), `SampledBy` (reverse)
+- **Sample**: тип (Sample/Interpolation/Remake), StartTimeSeconds, TrackId (sampler), SampledTrackId (source) (*Description удалён*)
 - **User**: имя, email, BCrypt-хеш пароля, роль (Guest/User/Admin), IsActive, LastLoginAt
 - **Revision**: TrackId, UserId, изменения, временная метка
 
@@ -123,18 +125,26 @@ Album ──1:N──→ Artwork (обложки)
 - `GET /api/revisions/user/{userId}` — правки пользователя
 
 ### Search
-- `GET /api/search?q=...` — глобальный поиск по трекам
+- `GET /api/search/artists?q=...` — поиск исполнителей (для автокомплита)
+- `GET /api/search/tracks?q=...&artistId=` — поиск треков (для автокомплита)
+
+### Submit
+- `POST /api/submit` — создать сэмпл (артист + альбом + трек + сэмпл в одной транзакции)
+
+### Upload
+- `POST /api/upload` — загрузить изображение (multipart/form-data, возвращает URL)
 
 ---
 
 ## Frontend JS модули
 
 | Файл | Роль |
-|---|---|
+|---|---|---|
 | `api.js` | `fetch`-обёртка с `credentials: 'include'`, + функции для всех API эндпоинтов |
 | `auth.js` | `register()`, `login()`, `logout()`, `checkAuth()`, `updateUIAuthState()` |
 | `render.js` | Функции отрисовки: художники, альбомы, треки, сэмплы, поиск |
 | `utils.js` | `getCurrentUser()`, `saveCurrentUser()`, `clearCurrentUser()`, `isAuthenticated()`, `showToast()`, `formatDuration()` |
+| `submit.js` | Автокомплит артистов/треков, загрузка файлов, создание сэмпла |
 
 Каждая HTML-страница подключает нужные модули и вызывает функции в `<script>` внизу body.
 
@@ -180,6 +190,23 @@ Album ──1:N──→ Artwork (обложки)
 ### Этап 5: Упрощение требований к паролю
 - Regex на бэкенде упрощён: с `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$` до `^(?=.*\d).{8,}$`
 - Фронтенд обновлён: проверка длины < 8 **ИЛИ** отсутствия цифры
+
+### Этап 6: Редизайн под whosampled.com
+- Проанализирован whosampled.com через Wayback Machine — цветовая схема, навигация, макет
+- Полная переработка style.css: Open Sans, тёмный navbar 52px (#292827), акцент #cc0000, таблицы для треков, breadcrumbs
+- Обновлены все render-функции: строки с обложками, breadcrumb-навигация, Song Connections таблицы
+- Убраны все фиолетовые оттенки (#7c3aed)
+- Inline-поиск в navbar на всех страницах (navbarSearch в utils.js)
+- Добавлен backend SearchController: GET /api/search/artists?q=, GET /api/search/tracks?q=&artistId=
+- TrackCount добавлен в ArtistDto и заполняется в ArtistsController
+- Создан SubmitController (POST /api/submit) — создание артиста/альбома/трека/сэмпла в одной транзакции
+- Создан UploadController (POST /api/upload) + статическая раздача /uploads
+- Создан submit.html — whosampled-стиль формы с автокомплитом, загрузкой файлов, выпадающими списками
+- Создан submit.js — модуль с debounced-автокомплитом, валидацией, отправкой формы
+- Все CRUD модалки удалены из index.html, artist.html, track.html, sample.html
+- Из render.js удалены openModal/closeModal, slugify, modal event listeners
+- Из style.css удалены стили модалок (.modal-overlay, .modal-content, .modal-actions, .header-actions)
+- На всех страницах в navbar добавлена ссылка «Добавить»
 
 ---
 
@@ -237,6 +264,22 @@ Album ──1:N──→ Artwork (обложки)
 - **Пароль на бэкенде**: Regex `^(?=.*\d).{8,}$` (было `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$`)
 - **auth.js**: `register()`, `login()`, `logout()`, `checkAuth()`, `updateUIAuthState()`, `toggleAuth()`
 - **serve.py**: простой статический сервер Python
+- **Редизайн под whosampled.com**: #292827 navbar, #cc0000 акцент, Open Sans, таблицы, breadcrumbs
+- **SearchController**: GET /api/search/artists?q=, GET /api/search/tracks?q=&artistId=
+- **SubmitController**: POST /api/submit — создание сэмпла в одной транзакции
+- **UploadController**: POST /api/upload — загрузка изображений
+- **TrackCount** добавлен в ArtistDto
+- **submit.html** + **submit.js** — форма с автокомплитом, загрузкой файлов, валидацией
+- **Inline-поиск** в navbar на всех страницах (navbarSearch)
+- **Ссылка «Добавить»** в navbar на всех страницах
+- **CRUD модалки удалены** из index, artist, track, sample страниц
+- **render.js очищен** от modal/slug функций
+- **Удалены мёртвые стили** модалок из style.css
+- **VK Video и Rutube embed**: распознавание URL, генерация iframe, jump-to-time через EmbedService + UrlValidatorService
+- **Reverse samples (SampledBy)**: навигация `Track.SampledBy`, включена в `TrackDetailDto`, отображается как «Использован в» на track.html
+- **Description удалён из Album и Sample**: модели, DTO, контроллеры, SQL create/migration скрипты
+- **Navbar редизайн**: грид-раскладка (логотип слева / поиск по центру / auth справа) вместо флексбокса, border-radius, тени, hover-анимации
+- **Сборка backend**: исправлены ошибки в SearchService.cs и ArtistsController.cs
 
 ### In Progress
 - (none)
@@ -258,20 +301,21 @@ Album ──1:N──→ Artwork (обложки)
 | **Отказ от slug-роутинга** | MPA (Python + CORS) проще поддерживать, чем один ASP.NET с двумя ролями |
 | **BCrypt** | Адаптивный хеш с солью, стандарт индустрии |
 | **Ссылки через `?id=`** | Проще, чем slug; не нужно генерировать уникальные URL |
+| **Description удалён из Album/Sample** | Упрощение схемы; Description нигде не использовался на фронтенде |
+| **Reverse samples (SampledBy)** | EF Core navigation property на Track; включён в TrackDetailDto как SampledBy |
+| **Navbar grid layout** | 3 колонки (logo/search/auth) — поиск всегда по центру независимо от ширины контента |
 
 ---
 
 ## Next Steps
-1. `dotnet build` + `dotnet run` — запустить API на порту 5000
-2. `python serve.py 8000` из frontend/ — запустить статический сервер
-3. Открыть `http://localhost:8000/register.html` и протестировать:
-   - некорректный email
-   - пароль короче 8 символов
-   - пароль без цифры
-   - пароли не совпадают
-   - успешная регистрация
-4. Проверить вход через `auth.html`
-5. Проверить страницы: артист, трек, сэмпл, альбом, поиск
+1. Запустить API и статику, протестировать submit.html:
+   - Автокомплит артистов и треков
+   - Загрузка изображения
+   - Создание сэмпла с новым артистом/треком
+   - Создание сэмпла с существующим артистом/треком
+2. Проверить страницы: артист, трек, сэмпл (без кнопок редактирования)
+3. Протестировать inline-поиск в navbar
+4. Применить миграцию БД: `mysql -u root samplewiki < backend/sql/migration_remove_description_add_reverse_samples.sql`
 
 ---
 
@@ -280,6 +324,7 @@ Album ──1:N──→ Artwork (обложки)
 - Backend на HEAD (без Slug-полей, без SlugHelper, без by-slug эндпоинтов, без wwwroot)
 - Swagger на `/` (не `/swagger`)
 - `API_BASE = 'http://localhost:5000/api'`, `credentials: 'include'`
+- Backend solution компилируется (проверено: все ошибки в SearchService.cs и ArtistsController.cs исправлены)
 
 ---
 
@@ -295,6 +340,9 @@ Album ──1:N──→ Artwork (обложки)
 | `backend/Controllers/TracksController.cs` | CRUD треков |
 | `backend/Controllers/SamplesController.cs` | CRUD сэмплов |
 | `backend/Controllers/RevisionsController.cs` | История правок |
+| `backend/Controllers/SearchController.cs` | Поиск артистов/треков для автокомплита |
+| `backend/Controllers/SubmitController.cs` | Создание сэмпла в одной транзакции |
+| `backend/Controllers/UploadController.cs` | Загрузка изображений |
 | `backend/Services/AuthService.cs` | RegisterAsync, LoginAsync, GenerateToken |
 | `backend/Services/SearchService.cs` | Поиск по трекам |
 | `backend/Services/UrlValidatorService.cs` | Валидация URL |
@@ -323,5 +371,8 @@ Album ──1:N──→ Artwork (обложки)
 | `frontend/modules/auth.js` | register, login, logout, checkAuth |
 | `frontend/modules/render.js` | Web-интерфейс: рендер всех страниц |
 | `frontend/modules/utils.js` | Хелперы: текущий пользователь, toast, форматирование |
+| `frontend/modules/submit.js` | Автокомплит + валидация + отправка submit формы |
 | `frontend/style.css` | Стили |
 | `frontend/serve.py` | Статический сервер Python |
+| `frontend/submit.html` | Создание сэмпла (авторизованные пользователи) |
+| `backend/sql/migration_remove_description_add_reverse_samples.sql` | Миграция БД |

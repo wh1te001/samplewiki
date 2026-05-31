@@ -13,15 +13,15 @@
                 <div class="navbar-brand">
                     <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
                 </div>
-                <ul class="navbar-menu">
-                    <li><a href="index.html">Исполнители</a></li>
-                </ul>
             </div>
-            <div class="navbar-right">
+            <div class="navbar-center">
                 <div class="navbar-search">
                     <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
                 </div>
+            </div>
+            <div class="navbar-right">
                 <ul class="navbar-menu">
+                    <li><a href="submit.html">Добавить</a></li>
                     <li id="registerNav"><a href="register.html">Регистрация</a></li>
                     <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
                 </ul>
@@ -31,66 +31,8 @@
 
     <div class="container main-content">
         <a href="index.html" class="btn-back">← Назад к исполнителям</a>
-        <div id="artistHeader" class="header-actions"></div>
         <div id="artistDetail"></div>
         <div id="toast" class="toast"></div>
-    </div>
-
-    <!-- Artist Edit Modal -->
-    <div id="artistModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('artistModal')">&times;</button>
-            <h2 id="artistModalTitle">Редактировать артиста</h2>
-            <form id="artistForm" novalidate>
-                <div class="auth-field">
-                    <input type="text" id="artistNameInput" placeholder="Название артиста *" required>
-                </div>
-                <div class="auth-field">
-                    <textarea id="artistDescriptionInput" placeholder="Описание"></textarea>
-                </div>
-                <div class="auth-field">
-                    <input type="url" id="artistWikiLinkInput" placeholder="Ссылка на Wikipedia">
-                </div>
-                <div id="artistFormError" class="auth-error" style="display:none;"></div>
-                <button type="button" id="artistFormSubmit" class="auth-submit" onclick="handleArtistSubmit()">Сохранить</button>
-                <div class="modal-actions" id="deleteArtistAction" style="display:none;">
-                    <button type="button" class="btn-danger auth-submit" onclick="handleDeleteArtist()">Удалить артиста</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Track Create Modal -->
-    <div id="trackModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('trackModal')">&times;</button>
-            <h2>Добавить трек</h2>
-            <form id="trackForm" novalidate>
-                <div class="auth-field">
-                    <input type="text" id="trackTitleInput" placeholder="Название трека *" required>
-                </div>
-                <div class="auth-field">
-                    <select id="trackArtistSelect" onchange="loadAlbumsForTrack()"></select>
-                </div>
-                <div class="auth-field">
-                    <select id="trackAlbumSelect"></select>
-                </div>
-                <div class="auth-field">
-                    <input type="number" id="trackDurationInput" placeholder="Длительность (сек)">
-                </div>
-                <div class="auth-field">
-                    <input type="number" id="trackNumberInput" placeholder="Номер трека">
-                </div>
-                <div class="auth-field">
-                    <input type="text" id="trackGenreInput" placeholder="Жанр">
-                </div>
-                <div class="auth-field">
-                    <input type="url" id="trackUrlInput" placeholder="Ссылка (YouTube)">
-                </div>
-                <div id="trackFormError" class="auth-error" style="display:none;"></div>
-                <button type="button" class="auth-submit" onclick="handleTrackSubmit()">Создать трек</button>
-            </form>
-        </div>
     </div>
 
     <script src="modules/utils.js"></script>
@@ -98,9 +40,6 @@
     <script src="modules/api.js"></script>
     <script src="modules/render.js"></script>
     <script>
-        let currentArtistId = null;
-        let currentArtistData = null;
-
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
             updateUIAuthState();
@@ -110,156 +49,13 @@
                 document.getElementById('artistDetail').innerHTML = '<p class="empty-state">ID артиста не указан</p>';
                 return;
             }
-            currentArtistId = parseInt(id);
             try {
-                const artist = await getArtistById(currentArtistId);
-                currentArtistData = artist;
+                const artist = await getArtistById(parseInt(id));
                 renderArtistDetail(artist);
-                renderArtistActions(artist);
             } catch (e) {
                 document.getElementById('artistDetail').innerHTML = '<p class="empty-state">Ошибка загрузки: ' + e.message + '</p>';
             }
         });
-
-        function renderArtistActions(artist) {
-            const user = getCurrentUser();
-            const header = document.getElementById('artistHeader');
-            if (!user) { header.innerHTML = ''; return; }
-            header.innerHTML = `
-                <button class="btn-primary" onclick="openArtistEditModal()">✏️ Редактировать</button>
-                <button class="btn-primary" onclick="openTrackCreateModal()">+ Добавить трек</button>
-            `;
-        }
-
-        // === ARTIST EDIT ===
-        function openArtistEditModal() {
-            if (!currentArtistData) return;
-            document.getElementById('artistModalTitle').textContent = 'Редактировать артиста';
-            document.getElementById('artistNameInput').value = currentArtistData.name || '';
-            document.getElementById('artistDescriptionInput').value = currentArtistData.description || '';
-            document.getElementById('artistWikiLinkInput').value = currentArtistData.wikipediaLink || currentArtistData.wikiLink || '';
-            document.getElementById('artistFormError').style.display = 'none';
-            document.getElementById('artistFormSubmit').disabled = false;
-            document.getElementById('artistFormSubmit').textContent = 'Сохранить';
-            document.getElementById('deleteArtistAction').style.display = 'block';
-            openModal('artistModal');
-        }
-
-        async function handleArtistSubmit() {
-            const name = document.getElementById('artistNameInput').value.trim();
-            const description = document.getElementById('artistDescriptionInput').value.trim();
-            const wikiLink = document.getElementById('artistWikiLinkInput').value.trim();
-            const errorEl = document.getElementById('artistFormError');
-            const submitBtn = document.getElementById('artistFormSubmit');
-
-            if (!name) {
-                errorEl.textContent = 'Название артиста обязательно';
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Сохранение...';
-            errorEl.style.display = 'none';
-
-            try {
-                await updateArtist(currentArtistId, { name, description, wikiLink });
-                showToast('Артист обновлён', 'success');
-                closeModal('artistModal');
-                const artist = await getArtistById(currentArtistId);
-                currentArtistData = artist;
-                renderArtistDetail(artist);
-                renderArtistActions(artist);
-            } catch (e) {
-                errorEl.textContent = e.message;
-                errorEl.style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Сохранить';
-            }
-        }
-
-        async function handleDeleteArtist() {
-            if (!confirm('Удалить артиста и все его треки?')) return;
-            const submitBtn = document.getElementById('artistFormSubmit');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Удаление...';
-            try {
-                await deleteArtist(currentArtistId);
-                showToast('Артист удалён', 'success');
-                window.location.href = 'index.html';
-            } catch (e) {
-                document.getElementById('artistFormError').textContent = e.message;
-                document.getElementById('artistFormError').style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Сохранить';
-            }
-        }
-
-        // === TRACK CREATE ===
-        async function openTrackCreateModal() {
-            document.getElementById('trackTitleInput').value = '';
-            document.getElementById('trackDurationInput').value = '';
-            document.getElementById('trackNumberInput').value = '';
-            document.getElementById('trackGenreInput').value = '';
-            document.getElementById('trackUrlInput').value = '';
-            document.getElementById('trackFormError').style.display = 'none';
-
-            // Load artists
-            const artists = await getArtists();
-            const artistSelect = document.getElementById('trackArtistSelect');
-            artistSelect.innerHTML = '<option value="">— Выберите артиста —</option>' +
-                artists.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
-            if (currentArtistId) artistSelect.value = currentArtistId;
-            await loadAlbumsForTrack();
-            openModal('trackModal');
-        }
-
-        async function loadAlbumsForTrack() {
-            const artistId = parseInt(document.getElementById('trackArtistSelect').value);
-            const albumSelect = document.getElementById('trackAlbumSelect');
-            if (!artistId) {
-                albumSelect.innerHTML = '<option value="">— Сначала выберите артиста —</option>';
-                return;
-            }
-            const artist = await getArtistById(artistId);
-            albumSelect.innerHTML = '<option value="">— Выберите альбом —</option>' +
-                (artist.albums || []).map(a => `<option value="${a.id}">${escapeHtml(a.title)}</option>`).join('');
-        }
-
-        async function handleTrackSubmit() {
-            const title = document.getElementById('trackTitleInput').value.trim();
-            const albumId = parseInt(document.getElementById('trackAlbumSelect').value);
-            const artistId = parseInt(document.getElementById('trackArtistSelect').value);
-            const duration = parseInt(document.getElementById('trackDurationInput').value) || 0;
-            const trackNumber = parseInt(document.getElementById('trackNumberInput').value) || null;
-            const genre = document.getElementById('trackGenreInput').value.trim() || null;
-            const resourceUrl = document.getElementById('trackUrlInput').value.trim() || null;
-            const errorEl = document.getElementById('trackFormError');
-            const submitBtn = document.querySelector('#trackModal .auth-submit');
-
-            if (!title) { errorEl.textContent = 'Название трека обязательно'; errorEl.style.display = 'block'; return; }
-            if (!artistId) { errorEl.textContent = 'Выберите артиста'; errorEl.style.display = 'block'; return; }
-            if (!albumId) { errorEl.textContent = 'Выберите альбом'; errorEl.style.display = 'block'; return; }
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Создание...';
-            errorEl.style.display = 'none';
-
-            try {
-                const trackData = { title, durationSeconds: duration, trackNumber, genre, resourceUrl, albumId, artistId };
-                await createTrack(trackData);
-                showToast('Трек создан', 'success');
-                closeModal('trackModal');
-                const artist = await getArtistById(currentArtistId);
-                currentArtistData = artist;
-                renderArtistDetail(artist);
-            } catch (e) {
-                errorEl.textContent = e.message;
-                errorEl.style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Создать трек';
-            }
-        }
     </script>
 </body>
 </html>

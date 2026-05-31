@@ -32,7 +32,6 @@ public class AlbumsController : ControllerBase
                     Id = a.Id,
                     Title = a.Title,
                     ReleaseYear = a.ReleaseYear,
-                    Description = a.Description,
                     ArtistId = a.ArtistId,
                     ImageUrl = a.Artworks.Select(aw => aw.ImageUrl).FirstOrDefault(),
                     CreatedAt = a.CreatedAt,
@@ -69,7 +68,6 @@ public class AlbumsController : ControllerBase
                 Id = album.Id,
                 Title = album.Title,
                 ReleaseYear = album.ReleaseYear,
-                Description = album.Description,
                 ArtistId = album.ArtistId,
                 ImageUrl = album.Artworks.FirstOrDefault()?.ImageUrl,
                 CreatedAt = album.CreatedAt,
@@ -87,7 +85,6 @@ public class AlbumsController : ControllerBase
                 {
                     Id = t.Id,
                     Title = t.Title,
-                    DurationSeconds = t.DurationSeconds,
                     TrackNumber = t.TrackNumber,
                     Genre = t.Genre,
                     ResourceUrl = t.ResourceUrl,

@@ -8,9 +8,6 @@ public class Album : BaseEntity
     /// <summary>Год выпуска альбома</summary>
     public int? ReleaseYear { get; set; }
 
-    /// <summary>Описание или примечания по альбому</summary>
-    public string? Description { get; set; }
-
     /// <summary>ID исполнителя (внешний ключ)</summary>
     public int ArtistId { get; set; }
 

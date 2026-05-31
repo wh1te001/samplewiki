@@ -32,7 +32,6 @@ CREATE TABLE `Albums` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
   `ReleaseYear` INT NULL,
-  `Description` TEXT NULL,
   `ArtistId` INT NOT NULL,
   `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -44,7 +43,6 @@ CREATE TABLE `Albums` (
 CREATE TABLE `Tracks` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Title` VARCHAR(200) NOT NULL,
-  `DurationSeconds` INT NOT NULL,
   `TrackNumber` INT NULL,
   `Genre` VARCHAR(50) NULL,
   `ResourceUrl` VARCHAR(500) NULL,
@@ -63,7 +61,6 @@ CREATE TABLE `Tracks` (
 CREATE TABLE `Samples` (
   `Id` INT NOT NULL AUTO_INCREMENT,
   `Type` INT NOT NULL DEFAULT 0 COMMENT '0=Sample, 1=Interpolation, 2=Cover, 3=Remix',
-  `Description` TEXT NULL,
   `StartTimeSeconds` INT NULL COMMENT 'Timecode where the sample starts (in seconds)',
   `TrackId` INT NOT NULL COMMENT 'Track that contains the sample',
   `SampledTrackId` INT NOT NULL COMMENT 'Track being sampled',

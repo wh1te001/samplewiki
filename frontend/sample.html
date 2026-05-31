@@ -13,15 +13,15 @@
                 <div class="navbar-brand">
                     <h1 onclick="window.location.href='index.html'">SampleWiki</h1>
                 </div>
-                <ul class="navbar-menu">
-                    <li><a href="index.html">Исполнители</a></li>
-                </ul>
             </div>
-            <div class="navbar-right">
+            <div class="navbar-center">
                 <div class="navbar-search">
                     <input type="text" id="navbarSearchInput" placeholder="Поиск треков..." onkeyup="if(event.key==='Enter')navbarSearch()">
                 </div>
+            </div>
+            <div class="navbar-right">
                 <ul class="navbar-menu">
+                    <li><a href="submit.html">Добавить</a></li>
                     <li id="registerNav"><a href="register.html">Регистрация</a></li>
                     <li id="authNav"><a href="javascript:void(0)" onclick="toggleAuth()">Вход</a></li>
                 </ul>
@@ -31,42 +31,8 @@
 
     <div class="container main-content">
         <a href="javascript:history.back()" class="btn-back">← Назад</a>
-        <div id="sampleHeader" class="header-actions"></div>
         <div id="sampleDetail"></div>
         <div id="toast" class="toast"></div>
-    </div>
-
-    <!-- Sample Edit Modal -->
-    <div id="sampleEditModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('sampleEditModal')">&times;</button>
-            <h2>Редактировать сэмпл</h2>
-            <form id="sampleEditForm" novalidate>
-                <div class="auth-field">
-                    <select id="sampleEditTypeSelect">
-                        <option value="Sample">Сэмпл</option>
-                        <option value="Interpolation">Интерполяция</option>
-                        <option value="Cover">Кавер</option>
-                        <option value="Remix">Ремикс</option>
-                    </select>
-                </div>
-                <div class="auth-field">
-                    <input type="text" id="sampleEditSourceSearch" placeholder="Поиск исходного трека..." oninput="searchEditSourceTracks()">
-                    <select id="sampleEditSampledTrackSelect" size="5" style="min-height:120px;"></select>
-                </div>
-                <div class="auth-field">
-                    <input type="number" id="sampleEditStartTimeInput" placeholder="Таймкод сэмпла (сек)">
-                </div>
-                <div class="auth-field">
-                    <textarea id="sampleEditDescriptionInput" placeholder="Описание сэмпла"></textarea>
-                </div>
-                <div id="sampleEditFormError" class="auth-error" style="display:none;"></div>
-                <button type="button" class="auth-submit" onclick="handleSampleEditSubmit()">Сохранить</button>
-                <div class="modal-actions">
-                    <button type="button" class="btn-danger auth-submit" onclick="handleSampleDelete()">Удалить сэмпл</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <script src="modules/utils.js"></script>
@@ -75,8 +41,6 @@
     <script src="modules/render.js"></script>
     <script>
         let currentSampleId = null;
-        let currentSampleData = null;
-        let editAllTracksCache = [];
 
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAuth();
@@ -90,109 +54,11 @@
             currentSampleId = parseInt(id);
             try {
                 const sample = await getSampleById(currentSampleId);
-                currentSampleData = sample;
                 renderSampleDetail(sample.track, sample.sampledTrack, sample);
-                renderSampleActions();
-                const tracks = await getTracks();
-                editAllTracksCache = tracks;
             } catch (e) {
                 document.getElementById('sampleDetail').innerHTML = '<p class="empty-state">Ошибка загрузки: ' + e.message + '</p>';
             }
         });
-
-        function renderSampleActions() {
-            const user = getCurrentUser();
-            const header = document.getElementById('sampleHeader');
-            if (!user) { header.innerHTML = ''; return; }
-            header.innerHTML = `
-                <button class="btn-primary" onclick="openSampleEditModal()">✏️ Редактировать</button>
-            `;
-        }
-
-        function populateEditSourceTracks(tracks) {
-            const select = document.getElementById('sampleEditSampledTrackSelect');
-            if (!tracks || tracks.length === 0) {
-                select.innerHTML = '<option disabled>Нет треков</option>';
-                return;
-            }
-            select.innerHTML = tracks.map(t =>
-                `<option value="${t.id}">${escapeHtml(t.title)} — ${escapeHtml(t.artistName || '')}</option>`
-            ).join('');
-        }
-
-        function searchEditSourceTracks() {
-            const q = document.getElementById('sampleEditSourceSearch').value.trim().toLowerCase();
-            if (!q) { populateEditSourceTracks(editAllTracksCache); return; }
-            const filtered = editAllTracksCache.filter(t =>
-                t.title.toLowerCase().includes(q) || (t.artistName && t.artistName.toLowerCase().includes(q))
-            );
-            populateEditSourceTracks(filtered);
-        }
-
-        function openSampleEditModal() {
-            if (!currentSampleData) return;
-            document.getElementById('sampleEditTypeSelect').value = currentSampleData.type || 'Sample';
-            document.getElementById('sampleEditSourceSearch').value = '';
-            document.getElementById('sampleEditStartTimeInput').value = currentSampleData.startTimeSeconds || '';
-            document.getElementById('sampleEditDescriptionInput').value = currentSampleData.description || '';
-            document.getElementById('sampleEditFormError').style.display = 'none';
-            populateEditSourceTracks(editAllTracksCache);
-            if (currentSampleData.sampledTrackId) {
-                document.getElementById('sampleEditSampledTrackSelect').value = currentSampleData.sampledTrackId;
-            }
-            openModal('sampleEditModal');
-        }
-
-        async function handleSampleEditSubmit() {
-            const type = document.getElementById('sampleEditTypeSelect').value;
-            const sampledTrackId = parseInt(document.getElementById('sampleEditSampledTrackSelect').value);
-            const startTimeSeconds = parseInt(document.getElementById('sampleEditStartTimeInput').value) || null;
-            const description = document.getElementById('sampleEditDescriptionInput').value.trim() || null;
-            const errorEl = document.getElementById('sampleEditFormError');
-            const submitBtn = document.querySelector('#sampleEditModal .auth-submit');
-
-            if (!sampledTrackId) {
-                errorEl.textContent = 'Выберите исходный трек';
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Сохранение...';
-            errorEl.style.display = 'none';
-
-            try {
-                await updateSample(currentSampleId, { type, description, startTimeSeconds, sampledTrackId });
-                showToast('Сэмпл обновлён', 'success');
-                closeModal('sampleEditModal');
-                const sample = await getSampleById(currentSampleId);
-                currentSampleData = sample;
-                renderSampleDetail(sample.track, sample.sampledTrack, sample);
-            } catch (e) {
-                errorEl.textContent = e.message;
-                errorEl.style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Сохранить';
-            }
-        }
-
-        async function handleSampleDelete() {
-            if (!confirm('Удалить этот сэмпл?')) return;
-            const trackId = currentSampleData.trackId;
-            const submitBtn = document.querySelector('#sampleEditModal .auth-submit');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Удаление...';
-            try {
-                await deleteSample(currentSampleId);
-                showToast('Сэмпл удалён', 'success');
-                window.location.href = 'track.html?id=' + trackId;
-            } catch (e) {
-                document.getElementById('sampleEditFormError').textContent = e.message;
-                document.getElementById('sampleEditFormError').style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Сохранить';
-            }
-        }
     </script>
 </body>
 </html>
