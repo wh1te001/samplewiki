@@ -1,246 +1,228 @@
-# 🎵 SampleWiki - Дипломный проект
+# SampleWiki — Каталог музыкальных сэмплов
 
-> **Каталог музыкальных сэмплов** - полноценное веб-приложение с REST API backend и интерактивным frontend.
+Веб-каталог музыкальных заимствований (Wikipedia для сэмплов). Трек A содержит сэмпл из трека B — SampleWiki показывает, кто кого засемплировал.
 
-## 🎯 Описание проекта
+## Технологический стек
 
-**SampleWiki** - это платформа для каталогизации музыкальных сэмплов, интерполяций и ремиксов. Пользователи могут добавлять исполнителей, альбомы, треки и сэмплы из различных источников (YouTube, SoundCloud, Bandcamp), просматривать историю изменений и искать информацию.
+| Компонент | Технология |
+|---|---|
+| Backend API | ASP.NET Core (.NET 8) — порт 5000 |
+| Frontend | Статические HTML + Vanilla JS + CSS (MPA) |
+| Статический сервер | Python http.server — порт 8000 |
+| База данных | MySQL (Entity Framework Core + Pomelo) |
+| Аутентификация | JWT в httpOnly cookie (HMAC-SHA256, 24ч) |
+| Хеширование паролей | BCrypt.Net |
+| Документация API | Swagger (на корне /) |
+| Rate Limiting | FixedWindow, 10/min/IP |
 
-## 📚 Структура проекта
+## Архитектура
 
 ```
-SampleWiki/
-├── backend/                 # ASP.NET Core 8.0 REST API
-│   ├── Controllers/         # REST endpoints (Auth, Artists, Tracks, Samples, Revisions)
-│   ├── Models/              # Сущности БД (User, Artist, Album, Track, Sample, Artwork, Revision)
-│   ├── Services/            # Бизнес-логика (Auth, UrlValidator, Embed, Search)
-│   ├── Data/                # Entity Framework Core DbContext
-│   ├── DTOs/                # Модели передачи данных
-│   ├── Interceptors/        # Аудит и логирование
-│   ├── Program.cs           # Точка входа с конфигурацией
-│   ├── appsettings.json     # Конфигурация (MySQL, JWT)
-│   └── backend.csproj       # Зависимости
-│
-├── frontend/                # Vanilla JavaScript приложение
-│   ├── index.html           # Главная HTML страница
-│   ├── style.css            # Dark theme стили
-│   ├── app.js               # Главная логика приложения
-│   └── modules/             # JavaScript модули
-│       ├── api.js           # Fetch wrapper с Authorization
-│       ├── auth.js          # Управление аутентификацией
-│       ├── render.js        # Рендеринг компонентов
-│       └── utils.js         # Утилиты и форматирование
-│
-├── QUICKSTART.md            # Быстрый старт за 5 минут
-├── SETUP_INSTRUCTIONS.md    # Полная инструкция развертывания
-├── DIPLOMA_CHECKLIST.md     # Чек-лист соответствия требованиям
-├── SUMMARY.md               # Полный список файлов
-└── README.md                # Этот файл
+Браузер ──GET──→ Python :8000 (serve.py)
+                  ↓
+              index.html, artist.html, track.html, ...
+                  ↓ (JS fetch с credentials: 'include')
+ASP.NET :5000 ──→ MySQL
 ```
 
-## 🚀 Быстрый старт
+Фронтенд и бэкенд — два разных сервера. Фронтенд общается с API через `fetch` + `credentials: 'include'` (httpOnly cookie). CORS настроен под `localhost:8000`.
+
+## Быстрый старт
 
 ### Требования
 - .NET 8.0 SDK
 - MySQL 8.0+
-- Браузер (Chrome, Firefox, Edge)
+- Python 3.x
+- Браузер Chrome/Firefox/Edge
 
 ### Запуск (3 команды)
 
-```powershell
+```bash
 # 1. Backend
 cd backend
 dotnet run
 
 # 2. Frontend (новый терминал)
 cd frontend
-python -m http.server 8000
+python serve.py
 
 # 3. Откройте в браузере
 # http://localhost:8000
 ```
 
-**Полная инструкция:** см. [QUICKSTART.md](QUICKSTART.md)
+### Конфигурация
 
-## 🎨 Функциональность
+Единственное, что нужно настроить — IP-адрес (для локальной разработки `127.0.0.1`):
+
+| Файл | Параметр |
+|---|---|
+| `backend/appsettings.json` | `VpsIp: "127.0.0.1"` |
+| `frontend/modules/config.js` | `VPS_IP = '127.0.0.1'` |
+
+## Страницы
+
+| URL | Описание |
+|---|---|
+| `/index.html` | Главная — список исполнителей |
+| `/artist.html?id=1` | Исполнитель + альбомы + треки |
+| `/album.html?id=1` | Альбом + треки + обложки |
+| `/track.html?id=1` | Трек + сэмплы (откуда и куда) |
+| `/sample.html?id=1` | Детально о сэмпле |
+| `/search.html?q=...` | Поиск |
+| `/auth.html` | Вход |
+| `/register.html` | Регистрация |
+| `/submit.html` | Создание сэмпла (авторизованные) |
+
+## Модель данных
+
+```
+Artist ──1:N──→ Album ──1:N──→ Track ──1:N──→ Sample
+                                   ↑              ↓
+                                   │    SampledBy │
+                                   └──────←───────┘
+User ──1:N──→ Track
+User ──1:N──→ Revision
+Album ──1:N──→ Artwork
+```
+
+- **Artist**: имя, описание, WikiLink
+- **Album**: название, год, ArtistId
+- **Track**: название, номер, жанр, ResourceUrl, AlbumId, ArtistId, UserId; Samples + SampledBy
+- **Sample**: тип (Sample/Interpolation/Remake/Cover), StartTimeSeconds, TrackId, SampledTrackId
+- **User**: имя, email, BCrypt-хеш, роль (Guest/User/Admin), IsActive, LastLoginAt
+- **Revision**: TrackId, UserId, JSON-снапшот изменений, временная метка
+
+## API Endpoints
+
+### Auth
+```
+POST /api/auth/register   Регистрация (httpOnly cookie)
+POST /api/auth/login      Вход (httpOnly cookie)
+POST /api/auth/logout     Выход (очистка cookie)
+GET  /api/auth/me         Текущий пользователь
+```
+
+### Artists
+```
+GET  /api/artists         Все исполнители
+GET  /api/artists/{id}    Исполнитель с альбомами/треками
+POST /api/artists         Создать [Authorize]
+```
+
+### Tracks
+```
+GET  /api/tracks              Все треки
+GET  /api/tracks/{id}         Трек с иерархией
+GET  /api/tracks/album/{id}   Треки альбома
+POST /api/tracks              Создать [Authorize]
+PUT  /api/tracks/{id}         Обновить [Authorize]
+```
+
+### Samples
+```
+GET  /api/samples              Все сэмплы
+GET  /api/samples/{id}         Сэмпл с деталями
+GET  /api/samples/track/{id}   Сэмплы трека
+POST /api/samples              Создать [Authorize]
+PUT  /api/samples/{id}         Обновить [Authorize]
+```
+
+### Albums
+```
+GET  /api/albums/{id}   Альбом с треками/исполнителем/обложками
+```
+
+### Search
+```
+GET  /api/search/artists?q=      Поиск исполнителей (автокомплит)
+GET  /api/search/tracks?q=&artistId=  Поиск треков (автокомплит)
+```
+
+### Submit
+```
+POST /api/submit   Создать сэмпл (артист + альбом + трек + сэмпл в одной транзакции) [Authorize]
+```
+
+### Upload
+```
+POST /api/upload   Загрузить изображение (multipart/form-data) [Authorize]
+```
+
+### Revisions
+```
+GET  /api/revisions              Все правки
+GET  /api/revisions/track/{id}   Правки трека
+GET  /api/revisions/user/{id}    Правки пользователя
+```
+
+## Функциональность
 
 ### Backend
-- ✅ **Аутентификация** - Регистрация, вход, JWT токены, BCrypt пароли
-- ✅ **REST API** - 18+ endpoints для управления данными
-- ✅ **Исполнители** - CRUD операции для исполнителей
-- ✅ **Альбомы** - Каталог альбомов с метаданными
-- ✅ **Треки** - Управление треками с жанрами и длительностью
-- ✅ **Сэмплы** - Учет сэмплов с типами (Sample, Interpolation, Cover, Remix)
-- ✅ **Платформы** - Поддержка YouTube, SoundCloud, Bandcamp
-- ✅ **История** - Отслеживание всех изменений (audit log)
-- ✅ **Поиск** - Глобальный поиск по всем сущностям
-- ✅ **Swagger** - Интерактивная API документация
+- ✅ Аутентификация (JWT httpOnly cookie, BCrypt, Rate Limiting)
+- ✅ REST API (20+ endpoints)
+- ✅ CRUD для исполнителей, альбомов, треков, сэмплов
+- ✅ Создание сэмпла в одной транзакции (submit)
+- ✅ Загрузка изображений
+- ✅ Поиск артистов/треков (автокомплит)
+- ✅ Валидация embed-ссылок (YouTube, VK Video, Rutube)
+- ✅ Встраивание медиаплееров с таймкодами
+- ✅ История ревизий (JSON-снапшоты)
+- ✅ Swagger-документация
 
 ### Frontend
-- ✅ **Dark Theme** - Современное оформление с оранжевым акцентом
-- ✅ **Навигация** - SPA с переключением между разделами
-- ✅ **Список исполнителей** - Grid layout с карточками
-- ✅ **Детали** - Полная информация об исполнителе с альбомами
-- ✅ **Поиск** - Глобальный поиск по всем сущностям в реальном времени
-- ✅ **История правок** - Просмотр changelog всех изменений
-- ✅ **Видео эмбеды** - Встраивание видео с ленивой загрузкой
-- ✅ **Уведомления** - Toast сообщения (успех, ошибка, информация)
-- ✅ **Адаптивность** - Mobile-friendly дизайн
-- ✅ **Безопасность** - XSS защита, правильное использование токенов
+- ✅ Дизайн в стиле whosampled.com (тёмный navbar, красный акцент, Open Sans)
+- ✅ Таблицы для треков, breadcrumbs, Song Connections
+- ✅ Inline-поиск в navbar на всех страницах
+- ✅ Форма создания сэмпла с автокомплитом и загрузкой файлов
+- ✅ Регистрация/вход с inline-валидацией
+- ✅ Отображение reverse samples (SampledBy — «Использован в»)
+- ✅ Адаптивный дизайн
+- ✅ Toast-уведомления
+- ✅ XSS-защита (экранирование HTML)
 
-## 🔌 API Endpoints
+## Безопасность
 
-### Аутентификация
+- **JWT в httpOnly cookie** — JS не видит токен, защита от XSS
+- **SameSite=Strict** — защита от CSRF
+- **BCrypt** — хеширование паролей с солью
+- **Rate Limiting** — 10 запросов в минуту на IP для Auth
+- **CORS** — только `localhost:8000`, AllowCredentials
+- **Валидация** — Data Annotations на бэкенде + inline на фронтенде
+- **Блокировка аккаунтов** — поле `IsActive`
+- **Пароль** — минимум 8 символов + хотя бы 1 цифра
+
+## Структура проекта
+
 ```
-POST   /api/auth/register      Регистрация
-POST   /api/auth/login         Вход
-GET    /api/auth/me            Информация о текущем пользователе
+SampleWiki/
+├── backend/
+│   ├── Controllers/       # Auth, Artists, Tracks, Samples, Albums, Search, Submit, Upload, Revisions
+│   ├── Models/            # User, Artist, Album, Track, Sample, Revision, Artwork
+│   ├── Services/          # AuthService, SearchService, UrlValidatorService, EmbedService
+│   ├── DTOs/              # AuthDtos и другие модели передачи данных
+│   ├── Data/              # AppDbContext (EF Core)
+│   ├── Interceptors/      # Аудит ревизий
+│   ├── sql/               # SQL скрипты миграций
+│   ├── Program.cs         # Точка входа (CORS, JWT, Swagger, DI)
+│   └── appsettings.json   # Конфигурация (VpsIp, MySQL, JWT)
+│
+├── frontend/
+│   ├── index.html         # Главная — список исполнителей
+│   ├── artist.html        # Детально об исполнителе
+│   ├── album.html         # Детально об альбоме
+│   ├── track.html         # Детально о треке
+│   ├── sample.html        # Детально о сэмпле
+│   ├── search.html        # Поиск
+│   ├── auth.html          # Вход
+│   ├── register.html      # Регистрация
+│   ├── submit.html        # Создание сэмпла
+│   ├── style.css          # Стили (Open Sans, whosampled-дизайн)
+│   ├── serve.py           # Статический сервер Python
+│   └── modules/
+│       ├── config.js      # Единственное место для VPS_IP
+│       ├── api.js         # Fetch-обёртка с credentials: 'include'
+│       ├── auth.js        # Регистрация, вход, выход, checkAuth
+│       ├── render.js      # Отрисовка всех страниц
+│       ├── submit.js      # Автокомплит, валидация, отправка submit
+│       └── utils.js       # Хелперы (toast, форматирование, navbarSearch)
 ```
-
-### Исполнители
-```
-GET    /api/artists            Получить всех
-GET    /api/artists/{id}       Получить по ID
-POST   /api/artists            Создать [Authorize]
-PUT    /api/artists/{id}       Обновить [Authorize]
-DELETE /api/artists/{id}       Удалить [Authorize(Admin)]
-```
-
-### Треки
-```
-GET    /api/tracks             Получить всех
-GET    /api/tracks/{id}        Получить по ID
-GET    /api/tracks/album/{id}  Получить по альбому
-POST   /api/tracks             Создать [Authorize]
-PUT    /api/tracks/{id}        Обновить [Authorize]
-DELETE /api/tracks/{id}        Удалить [Authorize]
-```
-
-### Сэмплы
-```
-GET    /api/samples            Получить всех
-GET    /api/samples/{id}       Получить по ID
-GET    /api/samples/track/{id} Получить по треку
-POST   /api/samples            Создать [Authorize]
-PUT    /api/samples/{id}       Обновить [Authorize]
-DELETE /api/samples/{id}       Удалить [Authorize]
-```
-
-### История
-```
-GET    /api/revisions          Получить все правки
-GET    /api/revisions/track/{id}  Получить по треку
-GET    /api/revisions/user/{id}   Получить по пользователю
-```
-
-## 🔐 Безопасность
-
-- **Хеширование паролей** - BCrypt с солью
-- **JWT токены** - 24-часовой срок действия
-- **Authorization** - Защита endpoints через [Authorize] атрибуты
-- **Role-based** - Разные уровни доступа (User, Admin)
-- **CORS** - Настроена политика для frontend
-- **XSS защита** - Экранирование HTML в frontend
-
-## 💻 Технологический стек
-
-### Backend
-- **.NET 8.0** - Современный runtime
-- **ASP.NET Core** - Web framework
-- **Entity Framework Core** - ORM
-- **MySQL** (Pomelo) - База данных
-- **JWT** - Аутентификация
-- **BCrypt** - Хеширование паролей
-- **Swagger** - API документация
-
-### Frontend
-- **Vanilla JavaScript** - ES6+ без фреймворков
-- **HTML5** - Семантичный HTML
-- **CSS3** - Современные стили
-- **Fetch API** - HTTP запросы
-- **sessionStorage** - Хранение токена
-
-## 📖 Документация
-
-1. **[QUICKSTART.md](QUICKSTART.md)** - Начните отсюда (5 минут)
-2. **[SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)** - Полная инструкция
-3. **[DIPLOMA_CHECKLIST.md](DIPLOMA_CHECKLIST.md)** - Чек-лист требований
-4. **[SUMMARY.md](SUMMARY.md)** - Список всех файлов
-
-## 🧪 Тестирование
-
-### Swagger UI
-- Откройте http://localhost:5000 после запуска backend
-- Все endpoints можно тестировать интерактивно
-
-### cURL примеры
-```bash
-# Регистрация
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test","email":"test@example.com","password":"Pass123"}'
-
-# Получить исполнителей
-curl http://localhost:5000/api/artists
-
-# Создать исполнителя (требует token)
-curl -X POST http://localhost:5000/api/artists \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"The Beatles","description":"Rock band"}'
-```
-
-**Полные примеры:** см. [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)
-
-## 📊 Требования соответствия
-
-✅ **Все требования дипломного проекта выполнены:**
-- ✅ Полноценный REST API с 18+ endpoints
-- ✅ Аутентификация и авторизация
-- ✅ Работа с реляционной базой данных
-- ✅ Интерактивный веб-интерфейс
-- ✅ Управление данными (CRUD)
-- ✅ История изменений
-- ✅ Поиск по данным
-- ✅ Валидация и обработка ошибок
-- ✅ Документация и примеры
-- ✅ Чистый, хорошо организованный код
-
-## 🐛 Решение проблем
-
-### MySQL connection error
-```
-Убедитесь что MySQL запущен: mysql -u root -p
-```
-
-### Port 5000 уже используется
-```
-Измените порт в Program.cs или:
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-```
-
-### Frontend не загружается
-```
-Проверьте консоль браузера (F12) и DevTools Network таб
-```
-
-**Полная помощь:** см. [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md#-решение-проблем)
-
-## 📞 Контакты и поддержка
-
-- 📚 **Документация:** [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)
-- ✅ **Чек-лист:** [DIPLOMA_CHECKLIST.md](DIPLOMA_CHECKLIST.md)  
-- 🚀 **Быстрый старт:** [QUICKSTART.md](QUICKSTART.md)
-
-## 📄 Лицензия
-
-Дипломный проект. Использование в образовательных целях.
-
----
-
-**Статус:** ✅ **ГОТОВО К СДАЧЕ**  
-**Версия:** 1.0 Production-ready  
-**Дата:** 17 мая 2026
-
-🎉 **Приложение полностью функционально и готово к защите диплома!**

@@ -233,7 +233,7 @@ function fillTestData() {
     document.getElementById('samplerTrackInput').value = 'Call Me Mañana';
     document.getElementById('samplerTrackHidden').value = '';
     document.getElementById('samplerGenreInput').value = 'Electronic';
-    document.getElementById('samplerTimeInput').value = '0:57';
+    document.getElementById('samplerTimeInput').value = '57';
     document.getElementById('samplerAlbumInput').value = 'No Time to Chill';
     document.getElementById('samplerYearInput').value = '1998';
     document.getElementById('samplerEmbedInput').value = 'https://vkvideo.ru/video-228926389_456240293';
@@ -244,7 +244,7 @@ function fillTestData() {
     document.getElementById('originalTrackInput').value = 'James Brown Is Dead';
     document.getElementById('originalTrackHidden').value = '';
     document.getElementById('originalGenreInput').value = 'Techno';
-    document.getElementById('originalTimeInput').value = '0:50';
+    document.getElementById('originalTimeInput').value = '50';
     document.getElementById('originalAlbumInput').value = 'James Brown Is Dead';
     document.getElementById('originalYearInput').value = '1991';
     document.getElementById('originalEmbedInput').value = 'https://rutube.ru/video/a328e50cf45a6856a688f788d8887f21/?r=plwd';
