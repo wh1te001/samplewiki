@@ -224,7 +224,35 @@ function showError(msg) {
     el.style.display = 'block';
 }
 
-// =================== FILE UPLOAD ===================
+// =================== FILL TEST DATA ===================
+function fillTestData() {
+    document.getElementById('sampleTypeSelect').value = 'Sample';
+
+    document.getElementById('samplerArtistInput').value = 'Kanye West';
+    document.getElementById('samplerArtistHidden').value = '';
+    document.getElementById('samplerTrackInput').value = 'Stronger';
+    document.getElementById('samplerTrackHidden').value = '';
+    document.getElementById('samplerGenreInput').value = 'Hip Hop';
+    document.getElementById('samplerTimeInput').value = '0';
+    document.getElementById('samplerAlbumInput').value = 'Graduation';
+    document.getElementById('samplerYearInput').value = '2007';
+    document.getElementById('samplerEmbedInput').value = 'https://youtube.com/watch?v=PsO6ZnUZI0g';
+    document.getElementById('samplerImageUrlInput').value = '';
+
+    document.getElementById('originalArtistInput').value = 'Daft Punk';
+    document.getElementById('originalArtistHidden').value = '';
+    document.getElementById('originalTrackInput').value = 'Harder, Better, Faster, Stronger';
+    document.getElementById('originalTrackHidden').value = '';
+    document.getElementById('originalGenreInput').value = 'Electronic';
+    document.getElementById('originalTimeInput').value = '0';
+    document.getElementById('originalAlbumInput').value = 'Discovery';
+    document.getElementById('originalYearInput').value = '2001';
+    document.getElementById('originalEmbedInput').value = 'https://youtube.com/watch?v=gAjR4_CbPpQ';
+    document.getElementById('originalImageUrlInput').value = '';
+
+    showToast('Тестовые данные заполнены', 'success');
+}
+
 async function handleFileUpload(inputId, urlInputId) {
     const fileInput = document.getElementById(inputId);
     const urlInput = document.getElementById(urlInputId);
