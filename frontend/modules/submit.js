@@ -228,26 +228,26 @@ function showError(msg) {
 function fillTestData() {
     document.getElementById('sampleTypeSelect').value = 'Sample';
 
-    document.getElementById('samplerArtistInput').value = 'Kanye West';
+    document.getElementById('samplerArtistInput').value = 'The Prodigy';
     document.getElementById('samplerArtistHidden').value = '';
-    document.getElementById('samplerTrackInput').value = 'Stronger';
+    document.getElementById('samplerTrackInput').value = 'Piranha';
     document.getElementById('samplerTrackHidden').value = '';
-    document.getElementById('samplerGenreInput').value = 'Hip Hop';
+    document.getElementById('samplerGenreInput').value = 'Electronic';
     document.getElementById('samplerTimeInput').value = '0';
-    document.getElementById('samplerAlbumInput').value = 'Graduation';
-    document.getElementById('samplerYearInput').value = '2007';
-    document.getElementById('samplerEmbedInput').value = 'https://youtube.com/watch?v=PsO6ZnUZI0g';
+    document.getElementById('samplerAlbumInput').value = 'The Fat of the Land';
+    document.getElementById('samplerYearInput').value = '1997';
+    document.getElementById('samplerEmbedInput').value = 'https://youtube.com/watch?v=bJfYAVQi_YE';
     document.getElementById('samplerImageUrlInput').value = '';
 
-    document.getElementById('originalArtistInput').value = 'Daft Punk';
+    document.getElementById('originalArtistInput').value = 'L.A. Style';
     document.getElementById('originalArtistHidden').value = '';
-    document.getElementById('originalTrackInput').value = 'Harder, Better, Faster, Stronger';
+    document.getElementById('originalTrackInput').value = 'James Brown Is Dead';
     document.getElementById('originalTrackHidden').value = '';
-    document.getElementById('originalGenreInput').value = 'Electronic';
+    document.getElementById('originalGenreInput').value = 'Techno';
     document.getElementById('originalTimeInput').value = '0';
-    document.getElementById('originalAlbumInput').value = 'Discovery';
-    document.getElementById('originalYearInput').value = '2001';
-    document.getElementById('originalEmbedInput').value = 'https://youtube.com/watch?v=gAjR4_CbPpQ';
+    document.getElementById('originalAlbumInput').value = 'James Brown Is Dead';
+    document.getElementById('originalYearInput').value = '1991';
+    document.getElementById('originalEmbedInput').value = 'https://youtube.com/watch?v=Nm-5F7b2hJg';
     document.getElementById('originalImageUrlInput').value = '';
 
     showToast('Тестовые данные заполнены', 'success');
