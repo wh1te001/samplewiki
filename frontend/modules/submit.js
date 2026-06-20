@@ -228,27 +228,27 @@ function showError(msg) {
 function fillTestData() {
     document.getElementById('sampleTypeSelect').value = 'Sample';
 
-    document.getElementById('samplerArtistInput').value = 'The Prodigy';
+    document.getElementById('samplerArtistInput').value = 'Scooter';
     document.getElementById('samplerArtistHidden').value = '';
-    document.getElementById('samplerTrackInput').value = 'Piranha';
+    document.getElementById('samplerTrackInput').value = 'Call Me Mañana';
     document.getElementById('samplerTrackHidden').value = '';
     document.getElementById('samplerGenreInput').value = 'Electronic';
-    document.getElementById('samplerTimeInput').value = '0';
-    document.getElementById('samplerAlbumInput').value = 'The Fat of the Land';
-    document.getElementById('samplerYearInput').value = '1997';
-    document.getElementById('samplerEmbedInput').value = 'https://youtube.com/watch?v=bJfYAVQi_YE';
-    document.getElementById('samplerImageUrlInput').value = '';
+    document.getElementById('samplerTimeInput').value = '0:57';
+    document.getElementById('samplerAlbumInput').value = 'No Time to Chill';
+    document.getElementById('samplerYearInput').value = '1998';
+    document.getElementById('samplerEmbedInput').value = 'https://vkvideo.ru/video-228926389_456240293';
+    document.getElementById('samplerImageUrlInput').value = 'https://www.whosampled.com/static/images/media/track_images_200/lr2_200935_9736620474.jpg';
 
     document.getElementById('originalArtistInput').value = 'L.A. Style';
     document.getElementById('originalArtistHidden').value = '';
     document.getElementById('originalTrackInput').value = 'James Brown Is Dead';
     document.getElementById('originalTrackHidden').value = '';
     document.getElementById('originalGenreInput').value = 'Techno';
-    document.getElementById('originalTimeInput').value = '0';
+    document.getElementById('originalTimeInput').value = '0:50';
     document.getElementById('originalAlbumInput').value = 'James Brown Is Dead';
     document.getElementById('originalYearInput').value = '1991';
-    document.getElementById('originalEmbedInput').value = 'https://youtube.com/watch?v=Nm-5F7b2hJg';
-    document.getElementById('originalImageUrlInput').value = '';
+    document.getElementById('originalEmbedInput').value = 'https://rutube.ru/video/a328e50cf45a6856a688f788d8887f21/?r=plwd';
+    document.getElementById('originalImageUrlInput').value = 'https://www.whosampled.com/static/images/media/track_images_200/lr2_200935_9920697868.jpg';
 
     showToast('Тестовые данные заполнены', 'success');
 }
