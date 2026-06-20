@@ -17,7 +17,9 @@ builder.Services.AddControllers()
     });
 
 // ==================== CORS ====================
-var frontendUrl = builder.Configuration["Frontend:Url"] ?? "http://localhost:8000";
+var vpsIp = builder.Configuration["VpsIp"] ?? "localhost";
+var frontendUrl = $"http://{vpsIp}:8000";
+var backendUrl = $"http://{vpsIp}:5000";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -185,10 +187,8 @@ app.UseStaticFiles(new StaticFileOptions
 app.MapControllers();
 
 // ==================== ЗАПУСК ПРИЛОЖЕНИЯ ====================
-var port = 5000;
-app.Urls.Add($"http://localhost:{port}");
+app.Urls.Add(backendUrl);
 
-Console.WriteLine($"🚀 Сервер запущен на http://localhost:{port}");
-Console.WriteLine($"📖 Swagger документация: http://localhost:{port}");
+Console.WriteLine($"🚀 Сервер запущен на {backendUrl}");
 
 app.Run();

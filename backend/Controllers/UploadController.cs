@@ -42,7 +42,7 @@ public class UploadController : ControllerBase
                 await file.CopyToAsync(stream);
             }
 
-            var url = $"/uploads/{fileName}";
+            var url = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
 
             _logger.LogInformation("Файл загружен: {Url}", url);
 
