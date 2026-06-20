@@ -1,12 +1,10 @@
-const API_HOST = 'http://localhost:5000/api';
-
 function toggleAuth() {
     window.location.href = 'auth.html';
 }
 
 function authFetch(endpoint, body) {
-    console.log(`[authFetch] POST ${API_HOST}${endpoint}`);
-    return fetch(`${API_HOST}${endpoint}`, {
+    console.log(`[authFetch] POST ${API_BASE}${endpoint}`);
+    return fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -46,7 +44,7 @@ async function login(username, password) {
 
 async function logout() {
     try {
-        await fetch(`${API_HOST}/auth/logout`, {
+        await fetch(`${API_BASE}/auth/logout`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -61,7 +59,7 @@ async function logout() {
 
 async function checkAuth() {
     try {
-        const response = await fetch(`${API_HOST}/auth/me`, {
+        const response = await fetch(`${API_BASE}/auth/me`, {
             credentials: 'include'
         });
         if (response.ok) {

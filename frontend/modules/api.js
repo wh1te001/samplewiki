@@ -1,5 +1,3 @@
-const API_BASE = 'http://localhost:5000/api';
-
 async function apiFetch(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`;
     const headers = { 'Content-Type': 'application/json', ...options.headers };
